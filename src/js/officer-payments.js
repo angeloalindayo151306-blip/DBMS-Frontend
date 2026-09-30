@@ -1,23 +1,29 @@
-import { getOfficerProposalPayments } from './api.js';
-import { requireRoles } from './guard.js';
-import { renderSidebar } from './ui.js';
+import { getOfficerProposalPayments } from "./api.js";
+import { requireRoles } from "./guard.js";
+import { renderSidebar } from "./ui.js";
 
 const money = (n) =>
-  `₱ ${Number(n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}`;
-const fmtDate = (s) => (s ? new Date(s).toLocaleString() : '—');
+  `₱ ${Number(n || 0).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`;
+const fmtDate = (s) => (s ? new Date(s).toLocaleString() : "—");
 
 function qs(name) {
   return new URLSearchParams(window.location.search).get(name);
 }
 
+function getReceiptNo(p) {
+  if (Array.isArray(p.receipts)) return p.receipts[0]?.receipt_no ?? "—";
+  if (p.receipts && typeof p.receipts === "object") return p.receipts.receipt_no ?? "—";
+  return "—";
+}
+
 async function init() {
-  const content = document.getElementById('content');
-  const auth = await requireRoles(['officer']);
+  const content = document.getElementById("content");
+  const auth = await requireRoles(["officer"]);
   if (!auth) return;
 
-  renderSidebar(document.getElementById('sidebar'), auth.role);
+  renderSidebar(document.getElementById("sidebar"), auth.role);
 
-  const id = qs('id');
+  const id = qs("id");
   if (!id) {
     content.innerHTML = `<div class="alert alert-warning">Missing proposal id.</div>`;
     return;
@@ -43,20 +49,16 @@ async function init() {
             <tbody>
               ${
                 (payments || []).length
-                  ? payments
-                      .map(
-                        (p) => `
+                  ? payments.map(p => `
                     <tr>
                       <td>${p.student_id}</td>
                       <td>${money(p.amount)}</td>
-                      <td>${p.method || '—'}</td>
-                      <td>${p.reference_no || '—'}</td>
+                      <td>${p.method || "—"}</td>
+                      <td>${p.reference_no || "—"}</td>
                       <td>${fmtDate(p.paid_at || p.created_at)}</td>
-                      <td>${p.receipts?.[0]?.receipt_no ?? '—'}</td>
+                      <td>${getReceiptNo(p)}</td>
                     </tr>
-                  `
-                      )
-                      .join('')
+                  `).join("")
                   : `<tr><td colspan="6" class="text-muted">No payments yet.</td></tr>`
               }
             </tbody>

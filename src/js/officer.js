@@ -4,6 +4,7 @@ import { renderSidebar } from './ui.js';
 
 const fmtDate = (s) => (s ? new Date(s).toLocaleString() : '—');
 
+
 async function init() {
   const content = document.getElementById('content');
 
@@ -25,6 +26,15 @@ async function init() {
       counts[p.status] = (counts[p.status] || 0) + 1;
 
     const recent = (proposals || []).slice(0, 5);
+    
+    content.innerHTML = `
+  <div class="mb-3">
+    <a class="btn btn-outline-primary" href="/pages/officer-payments-list.html">
+      Go to Proposal Payments
+    </a>
+  </div>
+  ...rest of your dashboard...
+`;
 
     content.innerHTML = `
       <div class="row g-3 mb-3">

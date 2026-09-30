@@ -80,7 +80,7 @@ async function init() {
         const method = document.getElementById('method').value;
         const amount = Number(document.getElementById('amount').value);
         const reference_no =
-          document.getElementById('reference_no').value.trim() || null;
+          document.getElementById('reference_no').value.trim();
 
         const result = await createPayment({
           proposal_id,

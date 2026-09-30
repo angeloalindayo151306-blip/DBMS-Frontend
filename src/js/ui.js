@@ -14,7 +14,7 @@ function navItemsForRole(role) {
     return [
       { label: 'Dashboard', href: '/pages/officer.html' },
       { label: 'Proposals', href: '/pages/officer-proposals.html' },
-      // (optional later) student creation link for officers
+      { label: "Proposal Payments", href: "/pages/officer-payments-list.html" }
     ];
   }
 
