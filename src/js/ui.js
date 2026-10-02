@@ -1,40 +1,42 @@
-import { logout } from './auth.js';
+import { logout } from "./auth.js";
 
 function navItemsForRole(role) {
-  if (role === 'student') {
+  if (role === "student") {
     return [
-      { label: 'Dashboard', href: '/pages/student.html' },
-      { label: 'Events', href: '/pages/student-events.html' },
-      { label: 'Make Payment', href: '/pages/student-pay.html' },
-      { label: 'History/Receipts', href: '/pages/student-history.html' },
+      { label: "Dashboard", href: "/pages/student.html", icon: "bi-speedometer2" },
+      { label: "Events", href: "/pages/student-events.html", icon: "bi-calendar-event" },
+      { label: "Make Payment", href: "/pages/student-pay.html", icon: "bi-cash-coin" },
+      { label: "History/Receipts", href: "/pages/student-history.html", icon: "bi-receipt" }
     ];
   }
 
-  if (role === 'officer') {
+  if (role === "officer") {
     return [
-      { label: 'Dashboard', href: '/pages/officer.html' },
-      { label: 'Proposals', href: '/pages/officer-proposals.html' },
-      { label: "Proposal Payments", href: "/pages/officer-payments-list.html" }
+      { label: "Dashboard", href: "/pages/officer.html", icon: "bi-speedometer2" },
+      { label: "Proposals", href: "/pages/officer-proposals.html", icon: "bi-file-earmark-text" },
+      { label: "Proposal Payments", href: "/pages/officer-payments-list.html", icon: "bi-clipboard-data" }
     ];
   }
 
-  if (role === 'dean') {
+  if (role === "dean") {
     return [
-      { label: 'Dashboard', href: '/pages/dean.html' },
-      { label: 'Approvals', href: '/pages/dean-approvals.html' },
-      { label: 'Reports', href: '/pages/dean-reports.html' },
-      { label: 'Accounts', href: '/pages/accounts.html' }, // Dean creates officers here
+      { label: "Dashboard", href: "/pages/dean.html", icon: "bi-speedometer2" },
+      { label: "Approvals", href: "/pages/dean-approvals.html", icon: "bi-check2-square" },
+      { label: "Reports", href: "/pages/dean-reports.html", icon: "bi-bar-chart-line" },
+      { label: "Accounts", href: "/pages/accounts.html", icon: "bi-people" }
     ];
   }
 
-  if (role === 'president') {
+  if (role === "president") {
     return [
-      { label: 'Dashboard', href: '/pages/president.html' },
-      { label: 'Create Students', href: '/pages/accounts.html' }, // President creates students here
+      { label: "Dashboard", href: "/pages/president.html", icon: "bi-speedometer2" },
+      { label: "Proposals", href: "/pages/officer-proposals.html", icon: "bi-file-earmark-text" },
+      { label: "Proposal Payments", href: "/pages/officer-payments-list.html", icon: "bi-clipboard-data" },
+      { label: "Accounts", href: "/pages/accounts.html", icon: "bi-people" }
     ];
   }
 
-  return [{ label: 'Login', href: '/pages/login.html' }];
+  return [{ label: "Login", href: "/pages/login.html", icon: "bi-box-arrow-in-right" }];
 }
 
 export function renderSidebar(el, role) {
@@ -42,25 +44,41 @@ export function renderSidebar(el, role) {
   const current = window.location.pathname;
 
   el.innerHTML = `
-    <h5 class="mb-3">DFMS</h5>
-    <div class="small mb-3">Role: <b>${role ?? 'unknown'}</b></div>
+    <div class="brand">
+      <div class="brand-icon"><i class="bi bi-laptop"></i></div>
+      <div>
+        <div class="brand-title">DFMS</div>
+        <div class="brand-subtitle">College of Computer Studies</div>
+      </div>
+    </div>
+
+    <div class="role-pill">
+      <i class="bi bi-person-badge"></i>
+      <span>Role:</span> <b style="text-transform:capitalize">${role ?? "unknown"}</b>
+    </div>
 
     ${items
       .map(
-        (i) =>
-          `<a class="${current === i.href ? 'active' : ''}" href="${i.href}">${
-            i.label
-          }</a>`
+        (i) => `
+          <a class="${current === i.href ? "active" : ""}" href="${i.href}">
+            <i class="bi ${i.icon}"></i>
+            <span>${i.label}</span>
+          </a>
+        `
       )
-      .join('')}
+      .join("")}
 
-    <hr style="opacity:.25">
-    <a href="#" id="btnLogout">Logout</a>
+    <hr>
+
+    <a href="#" id="btnLogout">
+      <i class="bi bi-box-arrow-left"></i>
+      <span>Logout</span>
+    </a>
   `;
 
-  el.querySelector('#btnLogout').addEventListener('click', async (e) => {
+  el.querySelector("#btnLogout").addEventListener("click", async (e) => {
     e.preventDefault();
     await logout();
-    window.location.href = '/pages/login.html';
+    window.location.href = "/pages/login.html";
   });
 }

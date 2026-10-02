@@ -101,3 +101,10 @@ export function createStudentAccount(payload) {
     body: JSON.stringify(payload),
   });
 }
+
+export function createDeanAccount(payload) {
+  return apiFetch("/accounts/deans", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+}

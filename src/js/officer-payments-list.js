@@ -12,7 +12,7 @@ function badge(status) {
 async function init() {
   const content = document.getElementById("content");
 
-  const auth = await requireRoles(["officer"]);
+  const auth = await requireRoles(["officer", "president"]);
   if (!auth) return;
 
   renderSidebar(document.getElementById("sidebar"), auth.role);
