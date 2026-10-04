@@ -14,6 +14,8 @@ function calcAge(dobStr) {
   return String(age);
 }
 
+// Officer positions (NOT including President here)
+// President account is created by selecting role "president" (Dean only).
 function officerTitleOptions() {
   const titles = ["VP Internal", "VP External", "Secretary", "PIO", "Auditor", "Treasurer"];
   return titles.map((t) => `<option value="${t}">${t}</option>`).join("");
@@ -31,10 +33,13 @@ async function init() {
   const isDean = auth.role === "dean";
   const isPresident = auth.role === "president";
 
-  // President: student only
-  // Dean: student/officer/president/dean
+  // ✅ President can create Student + Officer only
+  // ✅ Dean can create Student + Officer + President + Dean
   const roleChoices = isPresident
-    ? [{ value: "student", label: "Student" }]
+    ? [
+        { value: "student", label: "Student" },
+        { value: "officer", label: "Officer" }
+      ]
     : [
         { value: "student", label: "Student" },
         { value: "officer", label: "Officer" },
@@ -47,7 +52,9 @@ async function init() {
       <div>
         <h3 class="mb-1">Account Management</h3>
         <div class="text-muted small">
-          ${isPresident ? "President can create Student accounts." : "Dean can create all account types."}
+          ${isPresident
+            ? "President can create Student and Officer accounts (no Dean)."
+            : "Dean can create Student, Officer, President, and Dean accounts."}
         </div>
       </div>
     </div>
@@ -57,7 +64,7 @@ async function init() {
 
         <div class="col-12 col-md-4">
           <label class="form-label">Role</label>
-          <select class="form-select" id="role" ${isPresident ? "disabled" : ""} required>
+          <select class="form-select" id="role" required>
             ${roleChoices.map(r => `<option value="${r.value}">${r.label}</option>`).join("")}
           </select>
           <div class="form-text">
@@ -144,9 +151,7 @@ async function init() {
           <button class="btn btn-primary" id="btnCreate" type="submit">
             <i class="bi bi-person-plus me-1"></i> Create Account
           </button>
-          <button class="btn btn-outline-primary" id="btnClear" type="button">
-            Clear
-          </button>
+          <button class="btn btn-outline-primary" id="btnClear" type="button">Clear</button>
         </div>
 
         <div class="col-12" id="msg"></div>
@@ -192,10 +197,7 @@ async function init() {
     };
   }
 
-  // default role for President
-  if (isPresident) roleEl.value = "student";
   updateRoleUI();
-
   roleEl.addEventListener("change", updateRoleUI);
 
   dobEl.addEventListener("change", () => {
@@ -206,7 +208,6 @@ async function init() {
     form.reset();
     msg.innerHTML = "";
     ageEl.value = "";
-    if (isPresident) roleEl.value = "student";
     updateRoleUI();
   });
 
@@ -225,16 +226,15 @@ async function init() {
         result = await createStudentAccount(payload);
 
       } else if (role === "officer") {
-        // Dean only (President dropdown won't allow this)
         const officer_title = document.getElementById("officer_title").value;
         result = await createOfficerAccount({ ...payload, officer_title });
 
       } else if (role === "president") {
-        // Dean only
+        // Dean only (President won’t have this option in dropdown)
         result = await createOfficerAccount({ ...payload, officer_title: "President" });
 
       } else if (role === "dean") {
-        // Dean only
+        // Dean only (President won’t have this option in dropdown)
         result = await createDeanAccount(payload);
 
       } else {
@@ -251,9 +251,7 @@ async function init() {
 
       form.reset();
       ageEl.value = "";
-      if (isPresident) roleEl.value = "student";
       updateRoleUI();
-
     } catch (err) {
       msg.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
     } finally {
