@@ -1,30 +1,29 @@
 :root{
-  --ccs-blue-900:#0b2a5b;
-  --ccs-blue-800:#0d3b8e;
-  --ccs-blue-700:#165dff;
-  --ccs-cyan:#00c2ff;
-  --ccs-gold:#ffcc33;
+  /* Forest Green Theme (based on your poster) */
+  --ccs-blue-900:#06251f; /* deepest green (sidebar/hero base) */
+  --ccs-blue-800:#0b3a2f; /* dark green */
+  --ccs-blue-700:#0f5a44; /* primary green */
+  --ccs-cyan:#19a172;     /* teal accent (buttons/glow) */
+  --ccs-gold:#ffcc33;     /* yellow accent */
 
-  --bg:#f4f7ff;
+  /* Light base (used by default pages that are NOT app-body) */
+  --bg:#f3fbf7;
   --card:#ffffff;
-  --text:#0f172a;
-  --muted:#64748b;
-  --border:#e6ecff;
-  --shadow: 0 10px 30px rgba(2, 8, 23, .08);
+  --text:#071a13;
+  --muted:#4b6b5b;
+  --border:#d7efe3;
+  --shadow: 0 10px 30px rgba(2, 8, 23, .10);
 }
 
 *{ box-sizing:border-box; }
-
-html, body{
-  height: 100%;
-}
+html, body{ height: 100%; }
 
 body{
   margin:0;
   font-family:"Poppins", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   background:
-    radial-gradient(1200px 700px at 15% 10%, rgba(22,93,255,.14), transparent 60%),
-    radial-gradient(1000px 600px at 90% 5%, rgba(0,194,255,.12), transparent 55%),
+    radial-gradient(1200px 700px at 15% 10%, rgba(15, 90, 68, .18), transparent 60%),
+    radial-gradient(1000px 600px at 90% 5%, rgba(25, 161, 114, .14), transparent 55%),
     var(--bg);
   color:var(--text);
 }
@@ -35,7 +34,7 @@ body{
   min-height: 100vh;
 }
 
-/* LOGIN */
+/* LOGIN (legacy) */
 .login-container{
   min-height:100vh;
   display:flex;
@@ -52,17 +51,19 @@ body{
 }
 .login-card h3{ font-weight:700; }
 
-/* SIDEBAR (bulletproof: works whether element has class sidebar or id sidebar) */
+/* SIDEBAR */
 .sidebar,
 #sidebar{
-  height: 100vh;          /* always full screen height */
+  height: 100vh;
   min-height: 100vh;
   position: sticky;
   top: 0;
   overflow-y: auto;
 
+  /* FIXED: removed hidden character issue */
   background: linear-gradient(180deg, var(--ccs-blue-900), var(--ccs-blue-800));
   color:#fff;
+
   padding:18px;
   border-right: 1px solid rgba(255,255,255,.08);
 }
@@ -73,6 +74,7 @@ body{
   align-items:center;
   margin-bottom:14px;
 }
+
 .brand-icon{
   width:42px; height:42px;
   border-radius:12px;
@@ -82,6 +84,7 @@ body{
   border: 1px solid rgba(255,255,255,.14);
 }
 .brand-icon i{ font-size:20px; }
+
 .brand-title{
   font-weight:800;
   letter-spacing:.5px;
@@ -133,13 +136,8 @@ body{
 }
 
 /* MAIN */
-main{
-  padding-top:28px !important;
-}
-
-h3,h5{
-  font-weight:700;
-}
+main{ padding-top:28px !important; }
+h3,h5{ font-weight:700; }
 
 /* Cards */
 .card-soft{
@@ -171,16 +169,16 @@ h3,h5{
   border-radius:14px;
   display:grid;
   place-items:center;
-  background: linear-gradient(135deg, rgba(22,93,255,.18), rgba(0,194,255,.16));
+
+  /* UPDATED: green/teal tint (not blue) */
+  background: linear-gradient(135deg, rgba(15,90,68,.18), rgba(25,161,114,.16));
   border:1px solid var(--border);
   color: var(--ccs-blue-800);
 }
 .stat .stat-icon i{ font-size:20px; }
 
 /* TABLE */
-.table{
-  --bs-table-bg: transparent;
-}
+.table{ --bs-table-bg: transparent; }
 .table thead th{
   font-size:12px;
   text-transform:uppercase;
@@ -192,12 +190,11 @@ h3,h5{
   border-top:1px solid var(--border) !important;
   vertical-align:middle;
 }
-.table-responsive{
-  border-radius:14px;
-}
+.table-responsive{ border-radius:14px; }
 
 /* BUTTONS */
 .btn-primary{
+  /* FIXED: removed hidden character issue */
   background: linear-gradient(135deg, var(--ccs-blue-700), var(--ccs-cyan));
   border:none;
   border-radius:12px;
@@ -214,19 +211,85 @@ h3,h5{
   padding:.45em .7em;
 }
 
+/* Logo circle */
 .brand-icon{
   width:52px;
   height:52px;
-  border-radius:50%;              /* circle */
+  border-radius:50%;
   display:grid;
   place-items:center;
   background: rgba(255,255,255,.12);
   border: 1px solid rgba(255,255,255,.18);
-  overflow:hidden;                /* crop into circle */
+  overflow:hidden;
 }
-
 .brand-logo{
   width:100%;
   height:100%;
-  object-fit: cover;              /* fills circle nicely */
+  object-fit: cover;
+}
+
+/* Helpers */
+.text-gold { color: var(--ccs-gold) !important; }
+.badge-gold{
+  background: rgba(255, 204, 51, .16);
+  border: 1px solid rgba(255, 204, 51, .35);
+  color: #3a2a00;
+}
+
+/* =========================================================
+   INTERNAL PAGES DARK THEME (ALL UI EXCEPT landing/login/welcome)
+   Add: <body class="app-body"> on internal pages only.
+   (Do NOT add app-body on landing/login/welcome)
+   ========================================================= */
+body.app-body{
+  background:
+    radial-gradient(1200px 700px at 15% 10%, rgba(15, 90, 68, .40), transparent 60%),
+    radial-gradient(1000px 600px at 90% 5%, rgba(25, 161, 114, .22), transparent 55%),
+    linear-gradient(135deg, var(--ccs-blue-900), #041a14);
+  color:#eafff6;
+}
+
+body.app-body .text-muted{ color: rgba(234,255,246,.70) !important; }
+
+body.app-body .card-soft{
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 18px 50px rgba(0,0,0,.18);
+}
+
+body.app-body .table-responsive{
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.10);
+}
+body.app-body .table thead th{
+  color: rgba(234,255,246,.70);
+  border-bottom:1px solid rgba(255,255,255,.14) !important;
+}
+body.app-body .table tbody td{
+  border-top:1px solid rgba(255,255,255,.10) !important;
+  color: rgba(234,255,246,.92);
+}
+
+body.app-body .form-control,
+body.app-body .form-select{
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.14);
+  color: rgba(234,255,246,.92);
+}
+body.app-body .form-control::placeholder{
+  color: rgba(234,255,246,.55);
+}
+body.app-body .form-control:focus,
+body.app-body .form-select:focus{
+  border-color: rgba(25,161,114,.55);
+  box-shadow: 0 0 0 .25rem rgba(25,161,114,.18);
+}
+body.app-body .btn-outline-primary{
+  border-color: rgba(234,255,246,.55);
+  color: rgba(234,255,246,.92);
+}
+body.app-body .btn-outline-primary:hover{
+  background: rgba(25,161,114,.18);
+  border-color: rgba(25,161,114,.55);
+  color:#fff;
 }

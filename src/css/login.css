@@ -1,0 +1,99 @@
+/* Professional login page (matches your green theme vars in style.css) */
+
+.auth-body{
+    min-height:100vh;
+    background:
+      radial-gradient(1200px 700px at 15% 10%, rgba(15, 90, 68, .42), transparent 60%),
+      radial-gradient(1000px 600px at 90% 5%, rgba(25, 161, 114, .22), transparent 55%),
+      linear-gradient(135deg, var(--ccs-blue-900), #041a14);
+  }
+  
+  .auth-logo{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    object-fit:cover;
+    border:2px solid rgba(255,255,255,.18);
+  }
+  
+  .auth-card{
+    border-radius:22px;
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.06);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 18px 60px rgba(0,0,0,.25);
+  }
+  
+  /* Left side */
+  .auth-side{
+    height:100%;
+    padding:28px;
+    color:#eafff6;
+    background:
+      radial-gradient(900px 500px at 30% 10%, rgba(255, 204, 51, 0.08), transparent 55%),
+      radial-gradient(900px 500px at 70% 40%, rgba(25, 161, 114, 0.16), transparent 60%),
+      linear-gradient(180deg, rgba(6, 37, 31, 0.70), rgba(11, 58, 47, 0.55));
+  }
+  
+  .auth-badge{
+    background: rgba(255,255,255,.10);
+    border: 1px solid rgba(255, 204, 51, .28);
+    color:#fff;
+  }
+  
+  .auth-side-title{
+    font-weight:900;
+    letter-spacing:-0.02em;
+  }
+  
+  .auth-side-text{
+    color: rgba(234,255,246,.78);
+  }
+  
+  .auth-side-image-wrap{
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius:18px;
+    padding:14px;
+  }
+  
+  .auth-side-image{
+    width:100%;
+    max-height:340px;
+    object-fit:cover;
+    border-radius:14px;
+  }
+  
+  /* Right side */
+  .auth-form{
+    height:100%;
+    padding:28px;
+    background: rgba(255,255,255,.94);
+  }
+  
+  .auth-form-title{
+    font-size:28px;
+    font-weight:900;
+    letter-spacing:-0.02em;
+    color: var(--text);
+  }
+  
+  .auth-form-subtitle{
+    color: var(--muted);
+  }
+  
+  /* Inputs */
+  .auth-form .input-group-text{
+    background:#fff;
+    border-color: var(--border);
+  }
+  
+  .auth-form .form-control{
+    border-color: var(--border);
+  }
+  
+  .auth-form .form-control:focus{
+    border-color: rgba(25, 161, 114, 0.45);
+    box-shadow: 0 0 0 .25rem rgba(25, 161, 114, 0.18);
+  }

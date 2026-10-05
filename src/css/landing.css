@@ -1,0 +1,83 @@
+/* Landing page only (uses your :root variables from style.css) */
+
+.landing-body {
+    background:
+      radial-gradient(1200px 700px at 15% 10%, rgba(15, 90, 68, .45), transparent 60%),
+      radial-gradient(1000px 600px at 90% 5%, rgba(25, 161, 114, .28), transparent 55%),
+      linear-gradient(135deg, var(--ccs-blue-900), #041a14);
+    color: #eafff6;
+    min-height: 100vh;
+  }
+  
+  /* Navbar */
+  .landing-nav {
+    background: rgba(6, 37, 31, 0.55); /* glassy dark green */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+    backdrop-filter: blur(10px);
+  }
+  
+  .landing-logo {
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.22);
+  }
+  
+  /* Badge: add a hint of gold like the poster */
+  .landing-badge {
+    background: rgba(255, 255, 255, 0.10);
+    border: 1px solid rgba(255, 204, 51, 0.28);
+    color: #fff;
+  }
+  
+  .landing-badge-soft {
+    backdrop-filter: blur(10px);
+  }
+  
+  /* Hero area */
+  .landing-hero {
+    background: transparent; /* body already has the poster-like background */
+  }
+  
+  .landing-text-soft {
+    color: rgba(234, 255, 246, 0.78);
+  }
+  
+  /* Glass cards */
+  .landing-card {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 16px;
+    padding: 14px;
+    backdrop-filter: blur(10px);
+  }
+  
+  /* Image container */
+  .landing-image-wrap {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 18px;
+    padding: 18px;
+    backdrop-filter: blur(10px);
+  }
+  
+  .landing-image {
+    max-height: 420px;
+    width: 100%;
+    object-fit: contain;
+  }
+  
+  /* Footer */
+  .landing-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.10);
+  }
+  
+  /* Optional: make outline buttons match the green theme (landing only) */
+  .landing-body .btn-outline-light {
+    border-color: rgba(234, 255, 246, 0.55);
+    color: rgba(234, 255, 246, 0.92);
+  }
+  .landing-body .btn-outline-light:hover {
+    background: rgba(25, 161, 114, 0.18);
+    border-color: rgba(25, 161, 114, 0.55);
+    color: #fff;
+  }

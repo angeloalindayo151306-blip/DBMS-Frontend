@@ -24,7 +24,7 @@ form.addEventListener('submit', async (e) => {
 
     if (!role)
       throw new Error('Role not found from /me. Check backend response.');
-    window.location.href = roleToPage(role);
+      window.location.href = '/pages/welcome.html';
   } catch (err) {
     msg.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
   } finally {

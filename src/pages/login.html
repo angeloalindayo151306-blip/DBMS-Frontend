@@ -1,55 +1,139 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login - DFMS</title>
+    <title>Login | DFMS</title>
 
-    <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" href="/CCS%20logo.ico" />
 
-  <!-- Font + Icons -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Bootstrap + Icons -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+      rel="stylesheet"
+    />
 
-  <!-- Your CSS (must be after Bootstrap) -->
-  <link rel="stylesheet" href="/css/style.css">
+    <!-- Global theme -->
+    <link rel="stylesheet" href="/css/style.css" />
+    <!-- Login-only -->
+    <link rel="stylesheet" href="/css/login.css" />
   </head>
-  <body>
-    <div class="login-container">
-      <div class="card login-card shadow p-4">
-        <div class="text-center mb-3">
-          <h3 class="mb-1">Department Fund</h3>
-          <div class="text-muted">Management System</div>
+
+  <body class="auth-body">
+    <div class="container py-4 py-lg-5">
+      <!-- Header -->
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <a class="d-flex align-items-center gap-2 text-decoration-none" href="/">
+          <img src="/CCS%20logo.jpg" alt="CCS Logo" class="auth-logo" />
+          <div class="lh-sm">
+            <div class="fw-bold text-white">DFMS</div>
+            <div class="small text-white-50">College of Computer Studies</div>
+          </div>
+        </a>
+
+        <a href="/" class="btn btn-outline-light btn-sm">
+          <i class="bi bi-arrow-left me-2"></i>Back
+        </a>
+      </div>
+
+      <!-- Card -->
+      <div class="auth-card">
+        <div class="row g-0">
+          <!-- Left visual (desktop only) -->
+          <div class="col-lg-6 d-none d-lg-block">
+            <div class="auth-side">
+              <span class="badge auth-badge mb-3">Department Fund Management System</span>
+              <h2 class="auth-side-title mb-2">Secure access for CCS</h2>
+              <p class="auth-side-text mb-4">
+                Students can pay and view receipts. Officers can manage proposals and monitor collections.
+              </p>
+
+              <div class="auth-side-image-wrap">
+                <!-- put the image in src/public/img/officer-hero.png -->
+                <img src="/officer-hero.png" alt="CCS Officers" class="auth-side-image" />
+              </div>
+
+              <div class="auth-side-footer small mt-3">
+                Powered by Supabase Auth + DFMS API
+              </div>
+            </div>
+          </div>
+
+          <!-- Right form -->
+          <div class="col-12 col-lg-6">
+            <div class="auth-form">
+              <div class="mb-2">
+                <div class="auth-form-title">Sign in</div>
+                <div class="auth-form-subtitle">Use your DFMS account to continue.</div>
+              </div>
+
+              <!-- IMPORTANT: keep this id="message" for your login.js -->
+              <div id="message" class="mt-3"></div>
+
+              <form id="loginForm" class="mt-3" autocomplete="on">
+                <div class="mb-3">
+                  <label for="email" class="form-label">Email</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      class="form-control"
+                      placeholder="you@ccs.edu"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label for="password" class="form-label">Password</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                    <input
+                      id="password"
+                      name="password"
+                      type="password"
+                      class="form-control"
+                      placeholder="Enter your password"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <!-- IMPORTANT: keep id="btnLogin" for your login.js -->
+                <button id="btnLogin" type="submit" class="btn btn-primary w-100 py-2">
+                  <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                </button>
+
+                <div class="small text-muted mt-3">
+                  Account creation is handled by CCS Officers/Dean.
+                </div>
+              </form>
+
+              <hr class="my-4" />
+
+              <div class="small text-muted">
+                Trouble logging in? Contact the department office for assistance.
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <form id="loginForm">
-          <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input class="form-control" id="email" type="email" required />
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Password</label>
-            <input
-              class="form-control"
-              id="password"
-              type="password"
-              required
-            />
-          </div>
-
-          <button class="btn btn-primary w-100" id="btnLogin" type="submit">
-            Login
-          </button>
-        </form>
-
-        <div id="message" class="mt-3"></div>
+      <div class="text-center mt-4 small text-white-50">
+        © <span id="year"></span> DFMS — College of Computer Studies
       </div>
     </div>
 
+    <script>
+      document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
     <script type="module" src="/js/login.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
