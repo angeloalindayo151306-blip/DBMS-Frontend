@@ -45,7 +45,14 @@ export function renderSidebar(el, role) {
 
   el.innerHTML = `
     <div class="brand">
-      <div class="brand-icon"><i class="bi bi-laptop"></i></div>
+      <div class="brand-icon">
+        <img
+          src="/CCS logo.jpg"
+          alt="CCS Logo"
+          class="brand-logo"
+          onerror="this.style.display='none';"
+        />
+      </div>
       <div>
         <div class="brand-title">DFMS</div>
         <div class="brand-subtitle">College of Computer Studies</div>
@@ -54,7 +61,8 @@ export function renderSidebar(el, role) {
 
     <div class="role-pill">
       <i class="bi bi-person-badge"></i>
-      <span>Role:</span> <b style="text-transform:capitalize">${role ?? "unknown"}</b>
+      <span>Role:</span>
+      <b style="text-transform:capitalize">${role ?? "unknown"}</b>
     </div>
 
     ${items
