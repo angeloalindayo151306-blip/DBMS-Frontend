@@ -4,31 +4,113 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Proposals - DFMS</title>
+
     <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
 
-  <!-- Font + Icons -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Font + Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+      rel="stylesheet"
+    />
 
-  <!-- Your CSS (must be after Bootstrap) -->
-  <link rel="stylesheet" href="/css/style.css">
+    <!-- Your CSS -->
+    <link rel="stylesheet" href="/css/style.css" />
   </head>
+
   <body>
     <div class="container-fluid">
       <div class="row">
-        <aside
-          class="col-12 col-md-3 col-lg-2 sidebar p-3"
-          id="sidebar"
-        ></aside>
+        <aside class="col-12 col-md-3 col-lg-2 p-0">
+          <div class="sidebar h-100" id="sidebar"></div>
+        </aside>
+
         <main class="col-12 col-md-9 col-lg-10 p-4">
-          <h3 class="mb-3">My Proposals</h3>
+          <!-- Header -->
+          <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-2 mb-3">
+            <div>
+              <h3 class="mb-1">Proposals</h3>
+              <div id="pageHint" class="text-muted small">Loading…</div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <a class="btn btn-outline-primary btn-sm" href="/pages/officer.html">
+                <i class="bi bi-speedometer2 me-1"></i>Dashboard
+              </a>
+              <a class="btn btn-outline-primary btn-sm" href="/pages/officer-payments-list.html">
+                <i class="bi bi-clipboard-data me-1"></i>Proposal Payments
+              </a>
+            </div>
+          </div>
+
           <div id="content"></div>
         </main>
       </div>
     </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1080;">
+      <div id="appToast" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div id="appToastBody" class="toast-body"></div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Proposal Modal (professional replacement for prompt) -->
+    <div class="modal fade" id="editProposalModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="bi bi-pencil-square me-2"></i>Edit Proposal
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body">
+            <div id="editModalMsg"></div>
+            <input type="hidden" id="editProposalId" />
+
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <label class="form-label">Title</label>
+                <input id="editTitle" class="form-control" placeholder="Proposal title" />
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label">Description</label>
+                <input id="editDesc" class="form-control" placeholder="Optional notes" />
+              </div>
+              <div class="col-12">
+                <div class="form-text">
+                  Note: Only <b>pending</b> proposals can be edited. Breakdown editing is not included here.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-outline-primary" data-bs-dismiss="modal">Cancel</button>
+            <button id="btnSaveProposalEdit" class="btn btn-primary">
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS (required for modal + toast) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module" src="/js/officer-proposals.js"></script>
   </body>
 </html>

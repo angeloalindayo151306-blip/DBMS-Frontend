@@ -6,9 +6,10 @@ const fmtDate = (s) => (s ? new Date(s).toLocaleString() : "—");
 const money = (n) =>
   `₱ ${Number(n || 0).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`;
 
+const el = (id) => document.getElementById(id);
+
 function badge(status) {
-  const cls =
-    status === "approved" ? "success" : status === "rejected" ? "danger" : "warning";
+  const cls = status === "approved" ? "success" : status === "rejected" ? "danger" : "warning";
   return `<span class="badge text-bg-${cls}">${status}</span>`;
 }
 
@@ -21,21 +22,48 @@ function escapeHtml(str = "") {
     .replaceAll("'", "&#039;");
 }
 
+/* Toast (replaces alert) */
+let bsToast = null;
+function toast(type, html) {
+  const toastEl = el("appToast");
+  const bodyEl = el("appToastBody");
+
+  const cls = {
+    success: "text-bg-success",
+    danger: "text-bg-danger",
+    warning: "text-bg-warning",
+    info: "text-bg-info",
+  }[type] || "text-bg-info";
+
+  toastEl.className = `toast align-items-center border-0 ${cls}`;
+  bodyEl.innerHTML = html;
+
+  if (!bsToast) bsToast = new bootstrap.Toast(toastEl, { delay: 2600 });
+  bsToast.show();
+}
+
 async function init() {
-  const content = document.getElementById("content");
+  const content = el("content");
+
   const auth = await requireRoles(["officer", "president"]);
   if (!auth) return;
 
-  renderSidebar(document.getElementById("sidebar"), auth.role);
+  renderSidebar(el("sidebar"), auth.role);
 
-  // local state for breakdown rows
+  el("pageHint").textContent =
+    auth.role === "president"
+      ? "President view: monitor proposals and collections."
+      : "Officer view: create proposals and monitor collections.";
+
+  const myUserId = auth.me?.id; // used to avoid showing Edit for other people’s proposals
+
+  // local state for breakdown rows (same logic as before)
   let items = [
     { name: "Registration", amount: 50 },
-    { name: "Palaro", amount: 300 }
+    { name: "Palaro", amount: 300 },
   ];
 
-  const calcTotal = () =>
-    items.reduce((sum, it) => sum + Number(it.amount || 0), 0);
+  const calcTotal = () => items.reduce((sum, it) => sum + Number(it.amount || 0), 0);
 
   function renderItemsTable() {
     const rows = items
@@ -43,16 +71,17 @@ async function init() {
         (it, idx) => `
         <tr>
           <td>
-            <input class="form-control form-control-sm" data-name="${idx}" value="${escapeHtml(
-              it.name || ""
-            )}" placeholder="Item name" required>
+            <input class="form-control form-control-sm" data-name="${idx}"
+              value="${escapeHtml(it.name || "")}" placeholder="Item name" required>
           </td>
-          <td style="width:180px;">
-            <input class="form-control form-control-sm" data-amount="${idx}" type="number" min="0" step="0.01"
-              value="${Number(it.amount || 0)}" required>
+          <td style="width:200px;">
+            <input class="form-control form-control-sm" data-amount="${idx}" type="number"
+              min="0" step="0.01" value="${Number(it.amount || 0)}" required>
           </td>
-          <td style="width:90px;" class="text-end">
-            <button class="btn btn-sm btn-outline-danger" data-remove="${idx}" type="button">Remove</button>
+          <td style="width:110px;" class="text-end">
+            <button class="btn btn-sm btn-outline-danger" data-remove="${idx}" type="button">
+              <i class="bi bi-trash me-1"></i>Remove
+            </button>
           </td>
         </tr>
       `
@@ -69,14 +98,14 @@ async function init() {
               <th></th>
             </tr>
           </thead>
-          <tbody>
-            ${rows}
-          </tbody>
+          <tbody>${rows}</tbody>
         </table>
       </div>
 
       <div class="d-flex gap-2 align-items-center">
-        <button class="btn btn-sm btn-outline-primary" id="btnAddItem" type="button">Add Item</button>
+        <button class="btn btn-sm btn-outline-primary" id="btnAddItem" type="button">
+          <i class="bi bi-plus-circle me-1"></i>Add Item
+        </button>
         <div class="ms-auto">
           <span class="text-muted">Total required per student:</span>
           <b id="totalRequired">${money(calcTotal())}</b>
@@ -85,14 +114,65 @@ async function init() {
     `;
   }
 
+  // Edit modal init (replaces prompt)
+  const editModalEl = el("editProposalModal");
+  const bsEditModal = new bootstrap.Modal(editModalEl);
+  let proposalsById = new Map();
+
+  function openEditModal(p) {
+    el("editModalMsg").innerHTML = "";
+    el("editProposalId").value = p.id;
+    el("editTitle").value = p.title || "";
+    el("editDesc").value = p.description || "";
+    bsEditModal.show();
+  }
+
+  el("btnSaveProposalEdit").addEventListener("click", async () => {
+    const btn = el("btnSaveProposalEdit");
+    btn.disabled = true;
+
+    try {
+      const id = el("editProposalId").value;
+      const p = proposalsById.get(id);
+
+      if (!p) throw new Error("Proposal not found.");
+      if (p.status !== "pending") throw new Error("Only pending proposals can be edited.");
+
+      const newTitle = el("editTitle").value.trim();
+      const newDesc = el("editDesc").value.trim();
+
+      const payload = {};
+      if (newTitle) payload.title = newTitle;
+      payload.description = newDesc; // allow clearing description
+
+      await editProposal(id, payload);
+
+      toast("success", "Proposal updated successfully.");
+      bsEditModal.hide();
+      await load();
+    } catch (e) {
+      el("editModalMsg").innerHTML = `<div class="alert alert-danger mb-0">${e.message}</div>`;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
   async function load() {
-    const proposals = await getProposals(); // officer gets own proposals
+    const proposals = await getProposals(); // backend now can return all proposals for officers/president
+
+    proposalsById = new Map((proposals || []).map((p) => [p.id, p]));
 
     content.innerHTML = `
-      <div class="card card-soft p-3 mb-3" style="max-width: 980px;">
-        <h5 class="mb-3">Create Proposal (Breakdown Fees)</h5>
+      <!-- Create Proposal -->
+      <div class="card card-soft p-3 mb-3" style="max-width: 1100px;">
+        <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+          <div>
+            <h5 class="mb-0"><i class="bi bi-plus-square me-2"></i>Create Proposal</h5>
+            <div class="text-muted small">Add a fee breakdown. Total is computed automatically.</div>
+          </div>
+        </div>
 
-        <form id="createForm" class="row g-2">
+        <form id="createForm" class="row g-3">
           <div class="col-12 col-md-6">
             <label class="form-label">Title</label>
             <input class="form-control" id="title" placeholder="e.g., CCS Days Fees" required />
@@ -108,16 +188,25 @@ async function init() {
             <div id="itemsWrap">${renderItemsTable()}</div>
           </div>
 
-          <div class="col-12 mt-2">
-            <button class="btn btn-primary" id="btnCreate" type="submit">Create Proposal</button>
+          <div class="col-12 d-flex gap-2">
+            <button class="btn btn-primary" id="btnCreate" type="submit">
+              <i class="bi bi-send me-1"></i>Create Proposal
+            </button>
           </div>
 
           <div class="col-12" id="msg"></div>
         </form>
       </div>
 
-      <div class="card card-soft p-3">
-        <h5 class="mb-3">My Proposals</h5>
+      <!-- Proposals List -->
+      <div class="card card-soft p-3" style="max-width: 1100px;">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-2">
+          <div>
+            <h5 class="mb-0"><i class="bi bi-folder2-open me-2"></i>Proposals</h5>
+            <div class="text-muted small">View breakdown, status, and open payments monitoring.</div>
+          </div>
+        </div>
+
         <div class="table-responsive">
           <table class="table table-sm align-middle mb-0">
             <thead>
@@ -126,7 +215,7 @@ async function init() {
                 <th>Status</th>
                 <th>Required/Student</th>
                 <th>Created</th>
-                <th></th>
+                <th class="text-end">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -135,26 +224,29 @@ async function init() {
                   ? proposals
                       .map((p) => {
                         const breakdown = Array.isArray(p.breakdown) ? p.breakdown : [];
+
                         const breakdownHtml = breakdown.length
                           ? `
                             <details class="mt-1">
                               <summary class="small text-muted">View breakdown</summary>
                               <ul class="small mb-0">
                                 ${breakdown
-                                  .map(
-                                    (it) =>
-                                      `<li>${escapeHtml(it.name)} — ${money(it.amount)}</li>`
-                                  )
+                                  .map((it) => `<li>${escapeHtml(it.name)} — ${money(it.amount)}</li>`)
                                   .join("")}
                               </ul>
                             </details>
                           `
                           : `<div class="small text-muted">No breakdown stored</div>`;
 
+                        // IMPORTANT: Only show Edit if:
+                        // - pending
+                        // - created_by matches current user id (prevents "Not your proposal")
+                        const canEdit = p.status === "pending" && myUserId && p.created_by === myUserId;
+
                         return `
                           <tr>
                             <td>
-                              <div><b>${escapeHtml(p.title)}</b></div>
+                              <div class="fw-semibold">${escapeHtml(p.title)}</div>
                               <div class="small text-muted">${escapeHtml(p.description || "")}</div>
                               ${breakdownHtml}
                             </td>
@@ -163,11 +255,13 @@ async function init() {
                             <td>${fmtDate(p.created_at)}</td>
                             <td class="text-end">
                               <a class="btn btn-sm btn-outline-primary" href="/pages/officer-payments.html?id=${p.id}">
-                                Payments
+                                <i class="bi bi-receipt me-1"></i>Payments
                               </a>
                               ${
-                                p.status === "pending"
-                                  ? `<button class="btn btn-sm btn-outline-secondary ms-1" data-edit="${p.id}" type="button">Edit Title/Desc</button>`
+                                canEdit
+                                  ? `<button class="btn btn-sm btn-outline-secondary ms-1" data-edit="${p.id}" type="button">
+                                       <i class="bi bi-pencil me-1"></i>Edit
+                                     </button>`
                                   : ``
                               }
                             </td>
@@ -183,8 +277,8 @@ async function init() {
       </div>
     `;
 
-    // --- Wire breakdown controls ---
-    const itemsWrap = document.getElementById("itemsWrap");
+    // ---- Breakdown controls wiring (same logic, just re-wired after render) ----
+    const itemsWrap = el("itemsWrap");
 
     function refreshItemsUI() {
       itemsWrap.innerHTML = renderItemsTable();
@@ -192,7 +286,7 @@ async function init() {
     }
 
     function wireItemsEvents() {
-      document.getElementById("btnAddItem").addEventListener("click", () => {
+      el("btnAddItem").addEventListener("click", () => {
         items.push({ name: "", amount: 0 });
         refreshItemsUI();
       });
@@ -217,7 +311,7 @@ async function init() {
         inp.addEventListener("input", () => {
           const idx = Number(inp.getAttribute("data-amount"));
           items[idx].amount = Number(inp.value || 0);
-          const totalEl = document.getElementById("totalRequired");
+          const totalEl = el("totalRequired");
           if (totalEl) totalEl.textContent = money(calcTotal());
         });
       });
@@ -225,27 +319,24 @@ async function init() {
 
     wireItemsEvents();
 
-    // --- Create Proposal ---
-    document.getElementById("createForm").addEventListener("submit", async (e) => {
+    // ---- Create Proposal (same logic) ----
+    el("createForm").addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const msg = document.getElementById("msg");
-      const btn = document.getElementById("btnCreate");
+      const msg = el("msg");
+      const btn = el("btnCreate");
       msg.innerHTML = "";
       btn.disabled = true;
 
       try {
-        const title = document.getElementById("title").value.trim();
-        const description = document.getElementById("description").value.trim();
+        const title = el("title").value.trim();
+        const description = el("description").value.trim();
 
-        // clean breakdown: remove empty names, ensure amounts valid
         const breakdown = items
           .map((it) => ({ name: (it.name || "").trim(), amount: Number(it.amount || 0) }))
           .filter((it) => it.name.length > 0);
 
-        if (breakdown.length === 0) {
-          throw new Error("Please add at least 1 breakdown item.");
-        }
+        if (breakdown.length === 0) throw new Error("Please add at least 1 breakdown item.");
         if (breakdown.some((it) => !Number.isFinite(it.amount) || it.amount < 0)) {
           throw new Error("All breakdown amounts must be 0 or more.");
         }
@@ -253,44 +344,29 @@ async function init() {
         await createProposal({
           title,
           description: description || undefined,
-          breakdown
+          breakdown,
         });
 
-        msg.innerHTML = `<div class="alert alert-success">Proposal created!</div>`;
+        msg.innerHTML = `<div class="alert alert-success mb-0">Proposal created!</div>`;
 
-        // reset form + items
+        // reset
         e.target.reset();
         items = [{ name: "Registration", amount: 50 }];
         await load();
       } catch (err) {
-        msg.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+        msg.innerHTML = `<div class="alert alert-danger mb-0">${err.message}</div>`;
       } finally {
         btn.disabled = false;
       }
     });
 
-    // --- Edit Title/Desc only (keeps it simple for SP101) ---
+    // ---- Edit button wiring (now opens modal, not prompt) ----
     content.querySelectorAll("[data-edit]").forEach((btn) => {
-      btn.addEventListener("click", async () => {
+      btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-edit");
-        const newTitle = prompt("New title (leave blank to keep):");
-        if (newTitle === null) return;
-
-        const newDesc = prompt("New description (leave blank to keep):");
-        if (newDesc === null) return;
-
-        const payload = {};
-        if (newTitle.trim()) payload.title = newTitle.trim();
-        if (newDesc.trim()) payload.description = newDesc.trim();
-
-        if (Object.keys(payload).length === 0) return;
-
-        try {
-          await editProposal(id, payload);
-          await load();
-        } catch (e) {
-          alert(e.message);
-        }
+        const p = proposalsById.get(id);
+        if (!p) return;
+        openEditModal(p);
       });
     });
   }

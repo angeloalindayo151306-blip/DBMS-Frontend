@@ -293,3 +293,101 @@ body.app-body .btn-outline-primary:hover{
   border-color: rgba(25,161,114,.55);
   color:#fff;
 }
+
+/* =========================
+   Professional UI Pack (global)
+   ========================= */
+
+/* Page headings */
+.page-header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+}
+.page-title{
+  font-weight: 950;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.page-subtitle{
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* Toolbar (filters/search/actions) */
+.toolbar{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.55);
+  border-radius: 16px;
+}
+
+/* Better cards */
+.card-soft{
+  border-radius: 20px;
+  overflow: hidden;
+}
+.card-soft .card-head{
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(90deg, rgba(15,90,68,.08), rgba(25,161,114,.06));
+}
+.card-soft .card-body-pad{
+  padding: 16px;
+}
+
+/* Status pills */
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.7);
+}
+.pill-success{ border-color: rgba(25,161,114,.35); background: rgba(25,161,114,.10); color: #0c3a2c; }
+.pill-warning{ border-color: rgba(255,204,51,.45); background: rgba(255,204,51,.14); color: #3a2a00; }
+.pill-danger{ border-color: rgba(220,53,69,.35); background: rgba(220,53,69,.10); color: #4b0f18; }
+.pill-muted{ border-color: rgba(100,116,139,.25); background: rgba(100,116,139,.10); color: #334155; }
+
+/* Table polish */
+.table-responsive{
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(2,8,23,.06);
+}
+.table thead th{
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(8px);
+  z-index: 1;
+}
+
+/* Inputs */
+.form-control, .form-select{
+  border-radius: 14px;
+}
+.form-control:focus, .form-select:focus{
+  border-color: rgba(25,161,114,.45);
+  box-shadow: 0 0 0 .25rem rgba(25,161,114,.18);
+}
+
+/* Buttons */
+.btn{
+  border-radius: 14px;
+}
+.btn-outline-primary{
+  border-width: 1.5px;
+}

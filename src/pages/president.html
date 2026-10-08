@@ -4,28 +4,140 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>President - DFMS</title>
+
     <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
 
-  <!-- Font + Icons -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Font + Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+      rel="stylesheet"
+    />
 
-  <!-- Your CSS (must be after Bootstrap) -->
-  <link rel="stylesheet" href="/css/style.css">
+    <!-- Your CSS -->
+    <link rel="stylesheet" href="/css/style.css" />
   </head>
+
   <body>
     <div class="container-fluid">
       <div class="row">
-        <aside
-          class="col-12 col-md-3 col-lg-2 sidebar p-3"
-          id="sidebar"
-        ></aside>
+        <aside class="col-12 col-md-3 col-lg-2 p-0">
+          <div class="sidebar h-100" id="sidebar"></div>
+        </aside>
+
         <main class="col-12 col-md-9 col-lg-10 p-4">
-          <h3 class="mb-3">President Dashboard</h3>
-          <div id="content"></div>
+          <!-- Header -->
+          <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-2 mb-3">
+            <div>
+              <h3 class="mb-1" id="pageTitle">President Dashboard</h3>
+              <div class="text-muted small">
+                Welcome, <b id="welcomeName">—</b>
+                <span class="mx-2">•</span>
+                <span id="pageMeta">Loading…</span>
+              </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2">
+              <a class="btn btn-outline-primary btn-sm" href="/pages/officer-proposals.html">
+                <i class="bi bi-file-earmark-text me-1"></i>Proposals
+              </a>
+              <a class="btn btn-outline-primary btn-sm" href="/pages/officer-payments-list.html">
+                <i class="bi bi-clipboard-data me-1"></i>Proposal Payments
+              </a>
+              <a class="btn btn-outline-primary btn-sm" href="/pages/accounts.html">
+                <i class="bi bi-people me-1"></i>Accounts
+              </a>
+            </div>
+          </div>
+
+          <!-- Alerts -->
+          <div id="msg"></div>
+
+          <!-- Stats -->
+          <div class="row g-3 mb-3" style="max-width: 1100px;">
+            <div class="col-12 col-md-4">
+              <div class="card card-soft p-3 stat">
+                <div>
+                  <div class="stat-title">Pending Proposals</div>
+                  <div id="statPending" class="stat-value">—</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <div class="card card-soft p-3 stat">
+                <div>
+                  <div class="stat-title">Approved</div>
+                  <div id="statApproved" class="stat-value">—</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-check2-circle"></i></div>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <div class="card card-soft p-3 stat">
+                <div>
+                  <div class="stat-title">Rejected</div>
+                  <div id="statRejected" class="stat-value">—</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-x-circle"></i></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Proposals -->
+          <div class="card card-soft p-3" style="max-width: 1100px;">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-2">
+              <div>
+                <h5 class="mb-0">Recent Proposals</h5>
+                <div class="text-muted small">Monitor latest submissions and status updates.</div>
+              </div>
+
+              <div class="d-flex flex-wrap gap-2">
+                <select id="statusFilter" class="form-select form-select-sm" style="max-width: 210px;">
+                  <option value="all">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+
+                <input id="searchBox" class="form-control form-control-sm" style="max-width: 260px;"
+                  placeholder="Search title..." />
+
+                <button id="btnReload" class="btn btn-outline-primary btn-sm">
+                  <i class="bi bi-arrow-clockwise me-1"></i>Reload
+                </button>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-sm align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th class="text-end">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="recentTbody">
+                  <tr><td colspan="4" class="text-muted">Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div id="recentMeta" class="text-muted small mt-2">—</div>
+          </div>
         </main>
       </div>
     </div>

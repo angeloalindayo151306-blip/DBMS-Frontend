@@ -11,19 +11,85 @@
   <!-- Font + Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 
-  <!-- Your CSS (must be after Bootstrap) -->
+  <!-- Your CSS -->
   <link rel="stylesheet" href="/css/style.css">
 </head>
+
 <body>
   <div class="container-fluid">
     <div class="row">
-      <aside class="col-12 col-md-3 col-lg-2 sidebar p-3" id="sidebar"></aside>
+      <aside class="col-12 col-md-3 col-lg-2 p-0">
+        <div class="sidebar h-100" id="sidebar"></div>
+      </aside>
+
       <main class="col-12 col-md-9 col-lg-10 p-4">
-        <h3 class="mb-3">Proposal Payments</h3>
-        <div id="content"></div>
+        <!-- Header -->
+        <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-2 mb-3">
+          <div>
+            <h3 class="mb-1">Proposal Payments</h3>
+            <div id="pageHint" class="text-muted small">Loading…</div>
+          </div>
+
+          <div class="d-flex gap-2">
+            <a class="btn btn-outline-primary btn-sm" href="/pages/officer.html">
+              <i class="bi bi-speedometer2 me-1"></i>Dashboard
+            </a>
+            <a class="btn btn-outline-primary btn-sm" href="/pages/officer-proposals.html">
+              <i class="bi bi-file-earmark-text me-1"></i>Manage Proposals
+            </a>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="card card-soft p-3 mb-3" style="max-width: 1100px;">
+          <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+            <div>
+              <div class="fw-bold">Find a proposal</div>
+              <div id="listMeta" class="text-muted small">—</div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2">
+              <select id="statusFilter" class="form-select form-select-sm" style="max-width: 210px;">
+                <option value="all">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+
+              <input id="searchBox" class="form-control form-control-sm" style="max-width: 260px;"
+                placeholder="Search title..." />
+
+              <button id="btnReload" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-arrow-clockwise me-1"></i>Reload
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- List -->
+        <div class="card card-soft p-3" style="max-width: 1100px;">
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Proposal</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th class="text-end">Action</th>
+                </tr>
+              </thead>
+              <tbody id="proposalsTbody">
+                <tr><td colspan="4" class="text-muted">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Error placeholder -->
+        <div id="msg" class="mt-3"></div>
       </main>
     </div>
   </div>

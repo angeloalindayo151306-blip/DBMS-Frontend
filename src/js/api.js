@@ -108,3 +108,22 @@ export function createDeanAccount(payload) {
     body: JSON.stringify(payload)
   });
 }
+// Accounts listing with optional filters
+export function listAccounts({ role = "all", q = "" } = {}) {
+  const params = new URLSearchParams();
+  if (role && role !== "all") params.set("role", role);
+  if (q && q.trim()) params.set("q", q.trim());
+
+  const qs = params.toString();
+  return apiFetch(`/accounts${qs ? `?${qs}` : ""}`);
+}
+
+export function updateAccount(id, payload) {
+  return apiFetch(`/accounts/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+export function deleteAccount(id) {
+  return apiFetch(`/accounts/${id}`, { method: "DELETE" });
+}

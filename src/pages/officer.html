@@ -9,9 +9,9 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 
@@ -23,7 +23,95 @@
       </aside>
 
       <main class="col-12 col-md-9 col-lg-10 p-4">
-        <div id="content"></div>
+        <!-- Header -->
+        <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-2 mb-3">
+          <div>
+            <h3 id="dashTitle" class="mb-1">Officer Dashboard</h3>
+            <div class="text-muted small">
+              Welcome, <b id="dashName">—</b>
+              <span class="mx-2">•</span>
+              <span id="dashMeta">Loading…</span>
+            </div>
+          </div>
+
+          <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-primary btn-sm" href="/pages/officer-proposals.html">
+              <i class="bi bi-file-earmark-text me-1"></i>Manage Proposals
+            </a>
+            <a class="btn btn-outline-primary btn-sm" href="/pages/officer-payments-list.html">
+              <i class="bi bi-clipboard-data me-1"></i>Proposal Payments
+            </a>
+          </div>
+        </div>
+
+        <!-- Page alerts -->
+        <div id="dashMsg"></div>
+
+        <!-- Stats -->
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-4">
+            <div class="card card-soft p-3 stat">
+              <div>
+                <div class="stat-title">Pending Proposals</div>
+                <div id="statPending" class="stat-value">—</div>
+              </div>
+              <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-4">
+            <div class="card card-soft p-3 stat">
+              <div>
+                <div class="stat-title">Approved</div>
+                <div id="statApproved" class="stat-value">—</div>
+              </div>
+              <div class="stat-icon"><i class="bi bi-check2-circle"></i></div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-4">
+            <div class="card card-soft p-3 stat">
+              <div>
+                <div class="stat-title">Rejected</div>
+                <div id="statRejected" class="stat-value">—</div>
+              </div>
+              <div class="stat-icon"><i class="bi bi-x-circle"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Proposals -->
+        <div class="card card-soft p-3">
+          <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-2">
+            <div>
+              <h5 class="mb-0">Recent Proposals</h5>
+              <div class="text-muted small">Quick view of the latest proposals.</div>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Proposal</th>
+                  <th>Required / Student</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th class="text-end">Payments</th>
+                </tr>
+              </thead>
+              <tbody id="recentTbody">
+                <tr>
+                  <td colspan="5" class="text-muted">Loading…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div id="recentEmpty" class="text-muted small mt-2 d-none">
+            No proposals yet. Create one in <a href="/pages/officer-proposals.html">Manage Proposals</a>.
+          </div>
+        </div>
       </main>
     </div>
   </div>

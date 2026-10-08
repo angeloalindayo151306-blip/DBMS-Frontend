@@ -9,9 +9,9 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 
@@ -23,11 +23,304 @@
       </aside>
 
       <main class="col-12 col-md-9 col-lg-10 p-4">
-        <div id="content"></div>
+        <!-- Header -->
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div>
+            <h3 class="mb-1">Account Management</h3>
+            <div id="pageHint" class="text-muted small">Loading...</div>
+          </div>
+        </div>
+
+        <!-- Create Account -->
+        <div class="card card-soft p-3" style="max-width: 980px;">
+          <form id="accountForm" class="row g-3">
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Role</label>
+              <select class="form-select" id="role" required>
+                <option value="student">Student</option>
+                <option value="officer">Officer</option>
+                <option value="president">President</option>
+                <option value="dean">Dean</option>
+              </select>
+              <div id="roleNote" class="form-text"></div>
+            </div>
+
+            <div class="col-12 col-md-4" id="officerTitleWrap" style="display:none;">
+              <label class="form-label">Officer Position</label>
+              <select class="form-select" id="officer_title">
+                <option value="VP Internal">VP Internal</option>
+                <option value="VP External">VP External</option>
+                <option value="Secretary">Secretary</option>
+                <option value="PIO">PIO</option>
+                <option value="Auditor">Auditor</option>
+                <option value="Treasurer">Treasurer</option>
+              </select>
+            </div>
+
+            <hr class="my-1">
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Email</label>
+              <input class="form-control" id="email" type="email" required />
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Password</label>
+              <input class="form-control" id="password" type="password" minlength="6" required />
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Mobile Number</label>
+              <input class="form-control" id="mobile_number" type="text" required />
+            </div>
+
+            <hr class="my-1">
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">First Name</label>
+              <input class="form-control" id="first_name" required />
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Middle Name</label>
+              <input class="form-control" id="middle_name" />
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Last Name</label>
+              <input class="form-control" id="last_name" required />
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Date of Birth</label>
+              <input class="form-control" id="date_of_birth" type="date" required />
+            </div>
+
+            <div class="col-12 col-md-2">
+              <label class="form-label">Age</label>
+              <input class="form-control" id="age" type="text" readonly />
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label class="form-label">Address</label>
+              <input class="form-control" id="address" required />
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Course (CCS)</label>
+              <select class="form-select" id="course" required>
+                <option value="IT">IT</option>
+                <option value="CS">CS</option>
+              </select>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Year Level</label>
+              <select class="form-select" id="year_level" required>
+                <option value="1">1st Year</option>
+                <option value="2">2nd Year</option>
+                <option value="3">3rd Year</option>
+                <option value="4">4th Year</option>
+                <option value="5">5th Year</option>
+              </select>
+            </div>
+
+            <div class="col-12 d-flex gap-2">
+              <button class="btn btn-primary" id="btnCreate" type="submit">
+                <i class="bi bi-person-plus me-1"></i> Create Account
+              </button>
+              <button class="btn btn-outline-primary" id="btnClear" type="button">Clear</button>
+            </div>
+
+            <div class="col-12" id="msg"></div>
+          </form>
+        </div>
+
+        <!-- Existing Accounts -->
+        <div class="card card-soft p-3 mt-4" style="max-width: 1100px;">
+          <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+            <div>
+              <h5 class="mb-0">Existing Accounts</h5>
+              <div class="text-muted small" id="listHint">Loading...</div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <select id="filterRole" class="form-select form-select-sm" style="max-width: 220px;">
+                <option value="all">All</option>
+                <option value="student">Students</option>
+                <option value="officer">Officers</option>
+                <option value="president">Presidents</option>
+                <option value="dean">Deans</option>
+              </select>
+
+              <input id="searchAccount" class="form-control form-control-sm"
+                     placeholder="Search name/email..." style="max-width: 260px;" />
+
+              <button id="btnReloadAccounts" class="btn btn-outline-primary btn-sm">Reload</button>
+            </div>
+          </div>
+
+          <hr class="my-3"/>
+
+          <div class="table-responsive">
+            <table class="table align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Position</th>
+                  <th>Course / Year</th>
+                  <th>Mobile</th>
+                  <th class="text-end">Action</th>
+                </tr>
+              </thead>
+              <tbody id="accountsTbody">
+                <tr><td colspan="7" class="text-muted">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Edit Modal -->
+        <div class="modal fade" id="editAccountModal" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Edit Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+
+              <div class="modal-body">
+                <div id="editMsg"></div>
+                <input type="hidden" id="editId" />
+
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Email</label>
+                    <input id="editEmail" class="form-control" disabled />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Role</label>
+                    <input id="editRole" class="form-control" disabled />
+                  </div>
+
+                  <div class="col-md-4">
+                    <label class="form-label">First Name</label>
+                    <input id="editFirst" class="form-control" />
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Middle Name</label>
+                    <input id="editMiddle" class="form-control" />
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Last Name</label>
+                    <input id="editLast" class="form-control" />
+                  </div>
+
+                  <div class="col-md-4">
+                    <label class="form-label">Date of Birth</label>
+                    <input id="editDob" type="date" class="form-control" />
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">Age</label>
+                    <input id="editAge" class="form-control" readonly />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Mobile</label>
+                    <input id="editMobile" class="form-control" />
+                  </div>
+
+                  <div class="col-12">
+                    <label class="form-label">Address</label>
+                    <input id="editAddress" class="form-control" />
+                  </div>
+
+                  <div class="col-md-4">
+                    <label class="form-label">Course</label>
+                    <select id="editCourse" class="form-select">
+                      <option value="">-</option>
+                      <option value="IT">IT</option>
+                      <option value="CS">CS</option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-4">
+                    <label class="form-label">Year Level</label>
+                    <select id="editYear" class="form-select">
+                      <option value="">-</option>
+                      <option value="1">1st Year</option>
+                      <option value="2">2nd Year</option>
+                      <option value="3">3rd Year</option>
+                      <option value="4">4th Year</option>
+                      <option value="5">5th Year</option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-4">
+                    <label class="form-label">Officer Title</label>
+                    <input id="editOfficerTitle" class="form-control" />
+                  </div>
+
+                  <div class="col-12">
+                    <label class="form-label">New Password (optional)</label>
+                    <input id="editNewPassword" type="password" class="form-control"
+                           placeholder="Leave blank to keep current password" />
+                    <div class="form-text">Requires backend support for password reset.</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal-footer">
+                <button class="btn btn-outline-primary" data-bs-dismiss="modal">Cancel</button>
+                <button id="btnSaveAccount" class="btn btn-primary">Save Changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1080;">
+          <div id="appToast" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+              <div id="appToastBody" class="toast-body"></div>
+              <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Confirm Modal (replaces window.confirm) -->
+        <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 id="confirmTitle" class="modal-title">Confirm</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+
+              <div class="modal-body">
+                <div id="confirmBody" class="text-muted"></div>
+              </div>
+
+              <div class="modal-footer">
+                <button id="confirmCancelBtn" type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">
+                  Cancel
+                </button>
+                <button id="confirmOkBtn" type="button" class="btn btn-danger">
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </main>
     </div>
   </div>
 
+  <!-- Bootstrap JS for modal/toast -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module" src="/js/accounts.js"></script>
 </body>
 </html>
