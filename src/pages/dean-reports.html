@@ -4,31 +4,165 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Reports - DFMS</title>
+
     <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
 
-  <!-- Font + Icons -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Font + Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+      rel="stylesheet"
+    />
 
-  <!-- Your CSS (must be after Bootstrap) -->
-  <link rel="stylesheet" href="/css/style.css">
+    <!-- Your CSS -->
+    <link rel="stylesheet" href="/css/style.css" />
   </head>
+
   <body>
     <div class="container-fluid">
-      <div class="row">
-        <aside
-          class="col-12 col-md-3 col-lg-2 sidebar p-3"
-          id="sidebar"
-        ></aside>
+      <div class="row min-vh-100">
+        <aside class="col-12 col-md-3 col-lg-2 p-0">
+          <div class="sidebar h-100" id="sidebar"></div>
+        </aside>
+
         <main class="col-12 col-md-9 col-lg-10 p-4">
-          <h3 class="mb-3">Financial Reports</h3>
-          <div id="content"></div>
+          <!-- Header -->
+          <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-3">
+            <div>
+              <h3 class="mb-1">Financial Reports</h3>
+              <div class="text-muted small">
+                Department summary · Viewer: <b id="viewerName">—</b>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button id="btnCsv" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-download me-1"></i> Export CSV
+              </button>
+              <button id="btnRefresh" class="btn btn-primary btn-sm">
+                <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+              </button>
+            </div>
+          </div>
+
+          <!-- Info (hidden by default) -->
+          <div id="noCollectedAlert" class="alert alert-info py-2 small d-none">
+            <b>Note:</b> Collection totals are not included in the current department report response yet,
+            so <b>Collected</b> may show <b>₱ 0.00</b> for all events.
+          </div>
+
+          <!-- Stats -->
+          <div class="row g-3 mb-3">
+            <div class="col-12 col-md-3">
+              <div class="card card-soft p-3 stat">
+                <div>
+                  <div class="stat-title">Approved Events</div>
+                  <div id="statApprovedCount" class="stat-value">0</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-check2-circle"></i></div>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-3">
+              <div class="card card-soft p-3 stat">
+                <div>
+                  <div class="stat-title">Total Budget</div>
+                  <div id="statTotalBudget" class="stat-value" style="font-size: 22px">₱ 0.00</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-wallet2"></i></div>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-3">
+              <div class="card card-soft p-3 stat">
+                <div>
+                  <div class="stat-title">Total Collected</div>
+                  <div id="statTotalCollected" class="stat-value" style="font-size: 22px">₱ 0.00</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-cash-stack"></i></div>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-3">
+              <div class="card card-soft p-3 stat">
+                <div>
+                  <div class="stat-title">Total Remaining</div>
+                  <div id="statTotalRemaining" class="stat-value" style="font-size: 22px">₱ 0.00</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main layout -->
+          <div class="row g-3">
+            <!-- Table -->
+            <div class="col-12 col-lg-8">
+              <div class="card card-soft p-3">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                  <h5 class="mb-0">Events</h5>
+
+                  <div class="d-flex gap-2">
+                    <input
+                      id="searchBox"
+                      class="form-control form-control-sm"
+                      style="max-width: 260px"
+                      placeholder="Search title..."
+                    />
+                    <select id="statusFilter" class="form-select form-select-sm" style="max-width: 180px">
+                      <option value="all">All statuses</option>
+                      <option value="approved">Approved</option>
+                      <option value="pending">Pending</option>
+                      <option value="rejected">Rejected</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="table-responsive">
+                  <table class="table table-sm align-middle mb-0">
+                    <thead>
+                      <tr>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th class="text-end">Budget</th>
+                        <th class="text-end">Collected</th>
+                        <th class="text-end">Remaining</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody id="reportTbody">
+                      <tr>
+                        <td colspan="6" class="text-muted">Loading report data...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Details -->
+            <div class="col-12 col-lg-4">
+              <div class="card card-soft p-3">
+                <h5 class="mb-2">Details</h5>
+                <div id="detailsBox" class="small text-muted">
+                  Select an event from the table to view details.
+                </div>
+              </div>
+            </div>
+          </div>
         </main>
       </div>
     </div>
+
     <script type="module" src="/js/dean-reports.js"></script>
   </body>
 </html>

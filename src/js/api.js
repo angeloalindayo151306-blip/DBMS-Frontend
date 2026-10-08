@@ -109,13 +109,13 @@ export function createDeanAccount(payload) {
   });
 }
 // Accounts listing with optional filters
-export function listAccounts({ role = "all", q = "" } = {}) {
-  const params = new URLSearchParams();
-  if (role && role !== "all") params.set("role", role);
-  if (q && q.trim()) params.set("q", q.trim());
+export function listAccounts({ include_disabled = false } = {}) {
+  const qs = include_disabled ? "?include_disabled=true" : "";
+  return apiFetch(`/accounts${qs}`);
+}
 
-  const qs = params.toString();
-  return apiFetch(`/accounts${qs ? `?${qs}` : ""}`);
+export function enableAccount(id) {
+  return apiFetch(`/accounts/${id}/enable`, { method: "PATCH" });
 }
 
 export function updateAccount(id, payload) {

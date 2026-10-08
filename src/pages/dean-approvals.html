@@ -4,31 +4,171 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Approvals - DFMS</title>
-    <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <!-- Font + Icons -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
 
-  <!-- Your CSS (must be after Bootstrap) -->
-  <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="/css/style.css" />
   </head>
+
   <body>
     <div class="container-fluid">
-      <div class="row">
-        <aside
-          class="col-12 col-md-3 col-lg-2 sidebar p-3"
-          id="sidebar"
-        ></aside>
+      <div class="row min-vh-100">
+        <aside class="col-12 col-md-3 col-lg-2 p-0">
+          <div class="sidebar h-100" id="sidebar"></div>
+        </aside>
+
         <main class="col-12 col-md-9 col-lg-10 p-4">
-          <h3 class="mb-3">Proposal Approvals</h3>
-          <div id="content"></div>
+          <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-3">
+            <div>
+              <h3 class="mb-1">Proposal Approvals</h3>
+              <div class="text-muted small">Reviewer: <b id="viewerName">—</b></div>
+            </div>
+
+            <button id="btnRefresh" class="btn btn-primary btn-sm">
+              <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+            </button>
+          </div>
+
+          <div class="card card-soft p-3 mb-3">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+              <div class="btn-group" role="group">
+                <button class="btn btn-outline-primary btn-sm statusTab active" data-status="pending">
+                  Pending <span class="badge text-bg-warning ms-1" id="countPending">0</span>
+                </button>
+                <button class="btn btn-outline-primary btn-sm statusTab" data-status="approved">
+                  Approved <span class="badge text-bg-success ms-1" id="countApproved">0</span>
+                </button>
+                <button class="btn btn-outline-primary btn-sm statusTab" data-status="rejected">
+                  Rejected <span class="badge text-bg-danger ms-1" id="countRejected">0</span>
+                </button>
+                <button class="btn btn-outline-primary btn-sm statusTab" data-status="all">
+                  All <span class="badge text-bg-secondary ms-1" id="countAll">0</span>
+                </button>
+              </div>
+
+              <input
+                id="searchBox"
+                class="form-control form-control-sm"
+                style="max-width: 320px"
+                placeholder="Search proposal title..."
+              />
+            </div>
+          </div>
+
+          <div class="card card-soft p-3">
+            <div class="table-responsive">
+              <table class="table table-sm align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Created</th>
+                    <th>Status</th>
+                    <th class="text-end"></th>
+                  </tr>
+                </thead>
+                <tbody id="approvalsTbody">
+                  <tr><td colspan="4" class="text-muted">Loading proposals...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </main>
       </div>
     </div>
+
+    <!-- VIEW MODAL -->
+    <div class="modal fade" id="proposalModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div>
+              <h5 class="modal-title mb-0" id="pmTitle">Proposal</h5>
+              <div class="small text-muted" id="pmMeta">—</div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body">
+            <div class="d-flex flex-wrap gap-2 mb-2">
+              <div>Status: <span id="pmStatus">—</span></div>
+              <div class="ms-auto">
+                Required per student: <b id="pmRequired">₱ 0.00</b>
+              </div>
+            </div>
+
+            <div class="text-muted small mb-3" id="pmDescription"></div>
+
+            <div class="fw-semibold mb-2">Breakdown</div>
+            <div class="table-responsive mb-3">
+              <table class="table table-sm align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th class="text-end">Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="pmBreakdownTbody">
+                  <tr><td colspan="2" class="text-muted">No breakdown.</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="fw-semibold mb-2">Dean Comment (optional)</div>
+            <textarea id="pmComment" class="form-control" rows="3" placeholder="Add a comment..."></textarea>
+            <div class="small text-muted mt-1" id="pmExistingComment"></div>
+          </div>
+
+          <div class="modal-footer">
+            <div class="me-auto small text-muted" id="pmFooterHint"></div>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-danger" id="btnReject">
+              <i class="bi bi-x-circle me-1"></i> Reject
+            </button>
+            <button type="button" class="btn btn-success" id="btnApprove">
+              <i class="bi bi-check2-circle me-1"></i> Approve
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIRM MODAL -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Please confirm</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body" id="confirmMessage">Are you sure?</div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" id="confirmOkBtn">Yes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOASTS -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+    <!-- IMPORTANT: Bootstrap bundle provides bootstrap.Modal -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <script type="module" src="/js/dean-approvals.js"></script>
   </body>
 </html>

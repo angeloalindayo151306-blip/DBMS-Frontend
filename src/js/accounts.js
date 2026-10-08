@@ -6,7 +6,8 @@ import {
   createDeanAccount,
   listAccounts,
   updateAccount,
-  deleteAccount,
+  deleteAccount,   // used as DISABLE (ban)
+  enableAccount,   // you will add this in api.js (snippet below)
 } from "./api.js";
 
 const el = (id) => document.getElementById(id);
@@ -30,33 +31,48 @@ function fullNameRow(p) {
   return [p.first_name, p.middle_name, p.last_name].filter(Boolean).join(" ") || "(No name)";
 }
 
+function escapeHtml(str = "") {
+  return String(str)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 let AUTH_ROLE = null;
 let ACCOUNTS_CACHE = [];
 let bsEditModal = null;
 
-// ---------- Notifications (Toast + Confirm Modal) ----------
+// ---------- Toast ----------
 let bsToast = null;
 function toast(type, html) {
-  // type: success | danger | warning | info
   const toastEl = el("appToast");
   const bodyEl = el("appToastBody");
 
-  const cls = {
-    success: "text-bg-success",
-    danger: "text-bg-danger",
-    warning: "text-bg-warning",
-    info: "text-bg-info",
-  }[type] || "text-bg-info";
+  const map = {
+    success: { cls: "text-bg-success", icon: "bi-check2-circle" },
+    danger: { cls: "text-bg-danger", icon: "bi-x-circle" },
+    warning: { cls: "text-bg-warning", icon: "bi-exclamation-triangle" },
+    info: { cls: "text-bg-info", icon: "bi-info-circle" },
+  };
 
-  toastEl.className = `toast align-items-center border-0 ${cls}`;
-  bodyEl.innerHTML = html;
+  const t = map[type] || map.info;
+  toastEl.className = `toast align-items-center border-0 ${t.cls}`;
+  bodyEl.innerHTML = `<i class="bi ${t.icon} me-2"></i>${html}`;
 
   if (!bsToast) bsToast = new bootstrap.Toast(toastEl, { delay: 2600 });
   bsToast.show();
 }
 
+// ---------- Confirm modal ----------
 let bsConfirmModal = null;
-function confirmModal({ title = "Confirm", body = "Are you sure?", okText = "Confirm", okBtnClass = "btn-danger" } = {}) {
+function confirmModal({
+  title = "Confirm",
+  body = "Are you sure?",
+  okText = "Confirm",
+  okBtnClass = "btn-danger",
+} = {}) {
   const modalEl = el("confirmModal");
   if (!bsConfirmModal) bsConfirmModal = new bootstrap.Modal(modalEl);
 
@@ -71,7 +87,7 @@ function confirmModal({ title = "Confirm", body = "Are you sure?", okText = "Con
 
   return new Promise((resolve) => {
     const onOk = () => {
-      okBtn.blur(); // <--- prevents aria-hidden focus warning
+      okBtn.blur();
       cleanup();
       bsConfirmModal.hide();
       resolve(true);
@@ -79,7 +95,6 @@ function confirmModal({ title = "Confirm", body = "Are you sure?", okText = "Con
 
     const onHidden = () => {
       cleanup();
-      // restore focus to whatever opened it
       previouslyFocused?.focus?.();
       resolve(false);
     };
@@ -95,11 +110,11 @@ function confirmModal({ title = "Confirm", body = "Are you sure?", okText = "Con
     bsConfirmModal.show();
   });
 }
-// ----------------------------------------------------------
+// ------------------------------------
 
-function canEditTarget(targetRole) {
+function canManageTarget(targetRole) {
   if (AUTH_ROLE === "dean") return true;
-  // President can edit/delete Student + Officer only
+  // President can manage student/officer only
   return targetRole === "student" || targetRole === "officer";
 }
 
@@ -107,14 +122,41 @@ function applyClientFilters(rows) {
   const roleVal = el("filterRole").value;
   const q = (el("searchAccount").value || "").toLowerCase().trim();
 
-  return rows.filter((p) => {
-    if (roleVal !== "all" && p.role !== roleVal) return false;
+  return (rows || []).filter((p) => {
+    const isDisabled = !!p.disabled;
+
+    // Disabled Accounts filter
+    if (roleVal === "banned") {
+      if (!isDisabled) return false;
+    } else {
+      // For ALL and specific roles: ACTIVE ONLY
+      if (isDisabled) return false;
+
+      if (roleVal !== "all" && p.role !== roleVal) return false;
+    }
+
     if (q) {
       const hay = `${fullNameRow(p)} ${p.email ?? ""} ${p.mobile_number ?? ""}`.toLowerCase();
       if (!hay.includes(q)) return false;
     }
+
     return true;
   });
+}
+
+function roleBadge(role, disabled) {
+  const r = (role || "").toLowerCase();
+  const cls =
+    r === "dean" ? "dark" :
+    r === "president" ? "primary" :
+    r === "officer" ? "secondary" :
+    "info";
+
+  const dis = disabled
+    ? `<span class="badge text-bg-warning ms-2">DISABLED</span>`
+    : "";
+
+  return `<span class="badge text-bg-${cls}">${escapeHtml(r || "-")}</span>${dis}`;
 }
 
 function renderAccounts(rows) {
@@ -135,24 +177,39 @@ function renderAccounts(rows) {
       const cy = p.course ? `${p.course} / ${p.year_level ?? "-"}` : "-";
       const mobile = p.mobile_number ?? "-";
 
-      const disabled = canEditTarget(role) ? "" : "disabled";
-      const hint = canEditTarget(role) ? "" : `title="Not allowed"`;
+      const disabledFlag = !!p.disabled;
+
+      const allowed = canManageTarget(role);
+      const btnDisabled = allowed ? "" : "disabled";
+      const hint = allowed ? "" : `title="Not allowed"`;
+
+      // If disabled => show Enable, else show Disable
+      const enableBtn = disabledFlag
+        ? `<button class="btn btn-sm btn-outline-success btn-enable ms-2" data-id="${p.id}" ${btnDisabled} ${hint}>
+             <i class="bi bi-arrow-counterclockwise me-1"></i>Enable
+           </button>`
+        : "";
+
+      const disableBtn = !disabledFlag
+        ? `<button class="btn btn-sm btn-outline-danger btn-disable ms-2" data-id="${p.id}" ${btnDisabled} ${hint}>
+             <i class="bi bi-slash-circle me-1"></i>Disable
+           </button>`
+        : "";
 
       return `
-        <tr>
-          <td class="fw-semibold">${name}</td>
-          <td>${email}</td>
-          <td><span class="badge text-bg-secondary">${role}</span></td>
-          <td>${pos}</td>
-          <td>${cy}</td>
-          <td>${mobile}</td>
+        <tr ${disabledFlag ? 'style="opacity:.75;"' : ""}>
+          <td class="fw-semibold">${escapeHtml(name)}</td>
+          <td>${escapeHtml(email)}</td>
+          <td>${roleBadge(role, disabledFlag)}</td>
+          <td>${escapeHtml(pos)}</td>
+          <td>${escapeHtml(cy)}</td>
+          <td>${escapeHtml(mobile)}</td>
           <td class="text-end">
-            <button class="btn btn-sm btn-outline-primary btn-edit" data-id="${p.id}" ${disabled} ${hint}>
+            <button class="btn btn-sm btn-outline-primary btn-edit" data-id="${p.id}" ${btnDisabled} ${hint}>
               <i class="bi bi-pencil-square me-1"></i>Edit
             </button>
-            <button class="btn btn-sm btn-outline-danger btn-del ms-2" data-id="${p.id}" ${disabled} ${hint}>
-              <i class="bi bi-trash me-1"></i>Delete
-            </button>
+            ${enableBtn}
+            ${disableBtn}
           </td>
         </tr>
       `;
@@ -163,17 +220,26 @@ function renderAccounts(rows) {
     btn.addEventListener("click", () => openEdit(btn.dataset.id));
   });
 
-  tbody.querySelectorAll(".btn-del").forEach((btn) => {
-    btn.addEventListener("click", () => onDelete(btn.dataset.id, btn));
+  tbody.querySelectorAll(".btn-disable").forEach((btn) => {
+    btn.addEventListener("click", () => onDisable(btn.dataset.id));
+  });
+
+  tbody.querySelectorAll(".btn-enable").forEach((btn) => {
+    btn.addEventListener("click", () => onEnable(btn.dataset.id));
   });
 }
 
 async function loadAccounts() {
   const tbody = el("accountsTbody");
-  tbody.innerHTML = `<tr><td colspan="7" class="text-muted">Loading...</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="7" class="text-muted">Loading…</td></tr>`;
 
-  const rows = await listAccounts();
-  ACCOUNTS_CACHE = rows;
+  const roleVal = el("filterRole").value;
+
+  // Only fetch disabled from backend when viewing "Disabled Accounts"
+  const include_disabled = roleVal === "banned";
+
+  const rows = await listAccounts({ include_disabled });
+  ACCOUNTS_CACHE = Array.isArray(rows) ? rows : [];
   renderAccounts(ACCOUNTS_CACHE);
 }
 
@@ -190,12 +256,15 @@ function collectBasePayload() {
   return {
     email: el("email").value.trim(),
     password: el("password").value,
+
     first_name,
     ...(middle_name ? { middle_name } : {}),
     last_name,
+
     date_of_birth: el("date_of_birth").value,
     mobile_number: el("mobile_number").value.trim(),
     address: el("address").value.trim(),
+
     course: el("course").value,
     year_level: Number(el("year_level").value),
   };
@@ -205,11 +274,12 @@ function openEdit(id) {
   const row = ACCOUNTS_CACHE.find((x) => String(x.id) === String(id));
   if (!row) return;
 
-  if (!canEditTarget(row.role)) {
+  if (!canManageTarget(row.role)) {
     toast("danger", "You are not allowed to edit this role.");
     return;
   }
 
+  el("editMsg").innerHTML = "";
   el("editId").value = row.id;
 
   el("editEmail").value = row.email ?? "";
@@ -239,7 +309,10 @@ function openEdit(id) {
 }
 
 async function saveEdit() {
+  const editMsg = el("editMsg");
   const btnSave = el("btnSaveAccount");
+
+  editMsg.innerHTML = "";
   btnSave.disabled = true;
 
   try {
@@ -275,47 +348,69 @@ async function saveEdit() {
   }
 }
 
-async function onDelete(id, btnEl) {
+async function onDisable(id) {
   const row = ACCOUNTS_CACHE.find((x) => String(x.id) === String(id));
   if (!row) return;
 
-  if (!canEditTarget(row.role)) {
-    toast("danger", "Not allowed to delete this role.");
+  if (!canManageTarget(row.role)) {
+    toast("danger", "Not allowed to disable this role.");
     return;
   }
 
-  const name = fullNameRow(row);
-  const email = row.email ?? "(no email)";
-
   const ok = await confirmModal({
-    title: "Delete Account",
+    title: "Disable Account",
     body: `
-      Delete login access for this account?<br><br>
-      <b>Name:</b> ${name}<br>
-      <b>Email:</b> ${email}<br>
-      <b>Role:</b> ${row.role}<br><br>
-      <span class="text-muted">This removes login access but keeps records/history.</span>
+      Disable login access for this account?<br><br>
+      <b>Name:</b> ${escapeHtml(fullNameRow(row))}<br>
+      <b>Email:</b> ${escapeHtml(row.email ?? "-")}<br>
+      <b>Role:</b> ${escapeHtml(row.role ?? "-")}<br><br>
+      <span class="text-muted">This will prevent login, but keeps records/history.</span>
     `,
-    okText: "Delete",
+    okText: "Disable",
     okBtnClass: "btn-danger",
   });
 
   if (!ok) return;
 
-  const oldText = btnEl?.textContent;
-  if (btnEl) btnEl.disabled = true;
-
   try {
+    // backend uses DELETE as disable/ban
     await deleteAccount(id);
-    toast("success", "Account access deleted successfully.");
+    toast("success", "Account disabled successfully.");
     await loadAccounts();
   } catch (err) {
     toast("danger", err.message);
-  } finally {
-    if (btnEl) {
-      btnEl.disabled = false;
-      btnEl.textContent = oldText;
-    }
+  }
+}
+
+async function onEnable(id) {
+  const row = ACCOUNTS_CACHE.find((x) => String(x.id) === String(id));
+  if (!row) return;
+
+  if (!canManageTarget(row.role)) {
+    toast("danger", "Not allowed to enable this role.");
+    return;
+  }
+
+  const ok = await confirmModal({
+    title: "Enable Account",
+    body: `
+      Enable login access for this account?<br><br>
+      <b>Name:</b> ${escapeHtml(fullNameRow(row))}<br>
+      <b>Email:</b> ${escapeHtml(row.email ?? "-")}<br>
+      <b>Role:</b> ${escapeHtml(row.role ?? "-")}
+    `,
+    okText: "Enable",
+    okBtnClass: "btn-success",
+  });
+
+  if (!ok) return;
+
+  try {
+    await enableAccount(id);
+    toast("success", "Account enabled successfully.");
+    await loadAccounts();
+  } catch (err) {
+    toast("danger", err.message);
   }
 }
 
@@ -326,16 +421,17 @@ async function init() {
   AUTH_ROLE = auth.role;
   renderSidebar(el("sidebar"), auth.role);
 
-  const isDean = auth.role === "dean";
   const isPresident = auth.role === "president";
 
   el("pageHint").textContent = isPresident
     ? "President can create Student/Officer and manage Student/Officer accounts."
     : "Dean can create and manage Student/Officer/President/Dean accounts.";
 
-  el("listHint").textContent = isPresident ? "Showing Students and Officers only." : "Showing all roles.";
+  el("listHint").textContent = isPresident
+    ? "Showing Students and Officers only."
+    : "Showing all roles.";
 
-  // Role dropdown restrictions
+  // Restrict role dropdown for president
   const roleSelect = el("role");
   const roleNote = el("roleNote");
 
@@ -348,7 +444,7 @@ async function init() {
     roleNote.textContent = "Role rules are enforced by backend.";
   }
 
-  // Filter dropdown restrictions
+  // Restrict filter dropdown for president
   const filterRole = el("filterRole");
   if (isPresident) {
     [...filterRole.options].forEach((opt) => {
@@ -356,7 +452,7 @@ async function init() {
     });
   }
 
-  // Bootstrap modal (edit)
+  // Bootstrap modal
   bsEditModal = new bootstrap.Modal(el("editAccountModal"));
 
   // Create form handlers
@@ -383,8 +479,8 @@ async function init() {
     try {
       const role = roleSelect.value;
       const payload = collectBasePayload();
-      let result;
 
+      let result;
       if (role === "student") {
         result = await createStudentAccount(payload);
       } else if (role === "officer") {
@@ -400,9 +496,9 @@ async function init() {
 
       toast(
         "success",
-        `Created successfully: <b>${result.email ?? payload.email}</b>` +
-          (result.role ? `<br>Role: <b>${result.role}</b>` : "") +
-          (result.officer_title ? `<br>Position: <b>${result.officer_title}</b>` : "")
+        `Created successfully: <b>${escapeHtml(result.email ?? payload.email)}</b>` +
+          (result.role ? `<br>Role: <b>${escapeHtml(result.role)}</b>` : "") +
+          (result.officer_title ? `<br>Position: <b>${escapeHtml(result.officer_title)}</b>` : "")
       );
 
       el("accountForm").reset();
@@ -419,8 +515,13 @@ async function init() {
 
   // List handlers
   el("btnReloadAccounts").addEventListener("click", loadAccounts);
-  el("filterRole").addEventListener("change", () => renderAccounts(ACCOUNTS_CACHE));
+  el("filterRole").addEventListener("change", loadAccounts);
   el("searchAccount").addEventListener("input", () => renderAccounts(ACCOUNTS_CACHE));
+
+  // Show disabled toggle
+  if (el("showDisabled")) {
+    el("showDisabled").addEventListener("change", loadAccounts);
+  }
 
   // Save edit
   el("btnSaveAccount").addEventListener("click", saveEdit);

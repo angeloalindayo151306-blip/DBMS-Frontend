@@ -9,7 +9,10 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet"
+  >
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
@@ -139,41 +142,50 @@
 
         <!-- Existing Accounts -->
         <div class="card card-soft p-3 mt-4" style="max-width: 1100px;">
-          <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+          <!-- Header + toolbar -->
+          <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-2">
             <div>
               <h5 class="mb-0">Existing Accounts</h5>
               <div class="text-muted small" id="listHint">Loading...</div>
             </div>
 
-            <div class="d-flex gap-2">
-              <select id="filterRole" class="form-select form-select-sm" style="max-width: 220px;">
-                <option value="all">All</option>
+            <div class="d-flex flex-wrap gap-2 align-items-center justify-content-start justify-content-lg-end">
+              <select id="filterRole" class="form-select form-select-sm" style="min-width: 190px;">
+                <option value="all">All (Active)</option>
                 <option value="student">Students</option>
                 <option value="officer">Officers</option>
                 <option value="president">Presidents</option>
                 <option value="dean">Deans</option>
+                <option value="banned">Disabled Accounts</option>
               </select>
 
-              <input id="searchAccount" class="form-control form-control-sm"
-                     placeholder="Search name/email..." style="max-width: 260px;" />
+              <input
+                id="searchAccount"
+                class="form-control form-control-sm"
+                placeholder="Search name/email..."
+                style="min-width: 240px;"
+              />
 
-              <button id="btnReloadAccounts" class="btn btn-outline-primary btn-sm">Reload</button>
+              <button id="btnReloadAccounts" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-arrow-clockwise me-1"></i>Reload
+              </button>
             </div>
           </div>
 
           <hr class="my-3"/>
 
+          <!-- Table -->
           <div class="table-responsive">
             <table class="table align-middle mb-0">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Position</th>
-                  <th>Course / Year</th>
-                  <th>Mobile</th>
-                  <th class="text-end">Action</th>
+                  <th style="min-width: 200px;">Name</th>
+                  <th style="min-width: 220px;">Email</th>
+                  <th style="min-width: 140px;">Role</th>
+                  <th style="min-width: 150px;">Position</th>
+                  <th style="min-width: 140px;">Course / Year</th>
+                  <th style="min-width: 140px;">Mobile</th>
+                  <th class="text-end" style="min-width: 240px;">Action</th>
                 </tr>
               </thead>
               <tbody id="accountsTbody">
@@ -265,8 +277,12 @@
 
                   <div class="col-12">
                     <label class="form-label">New Password (optional)</label>
-                    <input id="editNewPassword" type="password" class="form-control"
-                           placeholder="Leave blank to keep current password" />
+                    <input
+                      id="editNewPassword"
+                      type="password"
+                      class="form-control"
+                      placeholder="Leave blank to keep current password"
+                    />
                     <div class="form-text">Requires backend support for password reset.</div>
                   </div>
                 </div>
@@ -290,7 +306,7 @@
           </div>
         </div>
 
-        <!-- Confirm Modal (replaces window.confirm) -->
+        <!-- Confirm Modal -->
         <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -319,7 +335,6 @@
     </div>
   </div>
 
-  <!-- Bootstrap JS for modal/toast -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module" src="/js/accounts.js"></script>
 </body>
