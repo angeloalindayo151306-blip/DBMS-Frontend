@@ -1,31 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Accounts - DFMS</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Accounts - DFMS</title>
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap"
-    rel="stylesheet"
-  >
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css">
-</head>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
 
-<body>
-  <div class="container-fluid">
-    <div class="row">
-      <aside class="col-12 col-md-3 col-lg-2 p-0">
+  <body class="app-shell-page">
+    <div class="app-shell">
+      <aside class="app-sidebar">
         <div class="sidebar h-100" id="sidebar"></div>
       </aside>
 
-      <main class="col-12 col-md-9 col-lg-10 p-4">
+      <main class="app-main">
         <!-- Header -->
         <div class="d-flex align-items-center justify-content-between mb-3">
           <div>
@@ -37,7 +42,6 @@
         <!-- Create Account -->
         <div class="card card-soft p-3" style="max-width: 980px;">
           <form id="accountForm" class="row g-3">
-
             <div class="col-12 col-md-4">
               <label class="form-label">Role</label>
               <select class="form-select" id="role" required>
@@ -61,7 +65,7 @@
               </select>
             </div>
 
-            <hr class="my-1">
+            <hr class="my-1" />
 
             <div class="col-12 col-md-4">
               <label class="form-label">Email</label>
@@ -78,7 +82,7 @@
               <input class="form-control" id="mobile_number" type="text" required />
             </div>
 
-            <hr class="my-1">
+            <hr class="my-1" />
 
             <div class="col-12 col-md-4">
               <label class="form-label">First Name</label>
@@ -142,7 +146,6 @@
 
         <!-- Existing Accounts -->
         <div class="card card-soft p-3 mt-4" style="max-width: 1100px;">
-          <!-- Header + toolbar -->
           <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-2">
             <div>
               <h5 class="mb-0">Existing Accounts</h5>
@@ -166,15 +169,14 @@
                 style="min-width: 240px;"
               />
 
-              <button id="btnReloadAccounts" class="btn btn-outline-primary btn-sm">
+              <button id="btnReloadAccounts" class="btn btn-outline-primary btn-sm" type="button">
                 <i class="bi bi-arrow-clockwise me-1"></i>Reload
               </button>
             </div>
           </div>
 
-          <hr class="my-3"/>
+          <hr class="my-3" />
 
-          <!-- Table -->
           <div class="table-responsive">
             <table class="table align-middle mb-0">
               <thead>
@@ -194,148 +196,152 @@
             </table>
           </div>
         </div>
-
-        <!-- Edit Modal -->
-        <div class="modal fade" id="editAccountModal" tabindex="-1" aria-hidden="true">
-          <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Edit Account</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-              </div>
-
-              <div class="modal-body">
-                <div id="editMsg"></div>
-                <input type="hidden" id="editId" />
-
-                <div class="row g-3">
-                  <div class="col-md-6">
-                    <label class="form-label">Email</label>
-                    <input id="editEmail" class="form-control" disabled />
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Role</label>
-                    <input id="editRole" class="form-control" disabled />
-                  </div>
-
-                  <div class="col-md-4">
-                    <label class="form-label">First Name</label>
-                    <input id="editFirst" class="form-control" />
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label">Middle Name</label>
-                    <input id="editMiddle" class="form-control" />
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label">Last Name</label>
-                    <input id="editLast" class="form-control" />
-                  </div>
-
-                  <div class="col-md-4">
-                    <label class="form-label">Date of Birth</label>
-                    <input id="editDob" type="date" class="form-control" />
-                  </div>
-                  <div class="col-md-2">
-                    <label class="form-label">Age</label>
-                    <input id="editAge" class="form-control" readonly />
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Mobile</label>
-                    <input id="editMobile" class="form-control" />
-                  </div>
-
-                  <div class="col-12">
-                    <label class="form-label">Address</label>
-                    <input id="editAddress" class="form-control" />
-                  </div>
-
-                  <div class="col-md-4">
-                    <label class="form-label">Course</label>
-                    <select id="editCourse" class="form-select">
-                      <option value="">-</option>
-                      <option value="IT">IT</option>
-                      <option value="CS">CS</option>
-                    </select>
-                  </div>
-
-                  <div class="col-md-4">
-                    <label class="form-label">Year Level</label>
-                    <select id="editYear" class="form-select">
-                      <option value="">-</option>
-                      <option value="1">1st Year</option>
-                      <option value="2">2nd Year</option>
-                      <option value="3">3rd Year</option>
-                      <option value="4">4th Year</option>
-                      <option value="5">5th Year</option>
-                    </select>
-                  </div>
-
-                  <div class="col-md-4">
-                    <label class="form-label">Officer Title</label>
-                    <input id="editOfficerTitle" class="form-control" />
-                  </div>
-
-                  <div class="col-12">
-                    <label class="form-label">New Password (optional)</label>
-                    <input
-                      id="editNewPassword"
-                      type="password"
-                      class="form-control"
-                      placeholder="Leave blank to keep current password"
-                    />
-                    <div class="form-text">Requires backend support for password reset.</div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="modal-footer">
-                <button class="btn btn-outline-primary" data-bs-dismiss="modal">Cancel</button>
-                <button id="btnSaveAccount" class="btn btn-primary">Save Changes</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Toast Notifications -->
-        <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1080;">
-          <div id="appToast" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-              <div id="appToastBody" class="toast-body"></div>
-              <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Confirm Modal -->
-        <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
-          <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 id="confirmTitle" class="modal-title">Confirm</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-              </div>
-
-              <div class="modal-body">
-                <div id="confirmBody" class="text-muted"></div>
-              </div>
-
-              <div class="modal-footer">
-                <button id="confirmCancelBtn" type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">
-                  Cancel
-                </button>
-                <button id="confirmOkBtn" type="button" class="btn btn-danger">
-                  Confirm
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
       </main>
     </div>
-  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script type="module" src="/js/accounts.js"></script>
-</body>
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editAccountModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Edit Account</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body">
+            <div id="editMsg"></div>
+            <input type="hidden" id="editId" />
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Email</label>
+                <input id="editEmail" class="form-control" disabled />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Role</label>
+                <input id="editRole" class="form-control" disabled />
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">First Name</label>
+                <input id="editFirst" class="form-control" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Middle Name</label>
+                <input id="editMiddle" class="form-control" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Last Name</label>
+                <input id="editLast" class="form-control" />
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Date of Birth</label>
+                <input id="editDob" type="date" class="form-control" />
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Age</label>
+                <input id="editAge" class="form-control" readonly />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Mobile</label>
+                <input id="editMobile" class="form-control" />
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">Address</label>
+                <input id="editAddress" class="form-control" />
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Course</label>
+                <select id="editCourse" class="form-select">
+                  <option value="">-</option>
+                  <option value="IT">IT</option>
+                  <option value="CS">CS</option>
+                </select>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Year Level</label>
+                <select id="editYear" class="form-select">
+                  <option value="">-</option>
+                  <option value="1">1st Year</option>
+                  <option value="2">2nd Year</option>
+                  <option value="3">3rd Year</option>
+                  <option value="4">4th Year</option>
+                  <option value="5">5th Year</option>
+                </select>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Officer Title</label>
+                <input id="editOfficerTitle" class="form-control" />
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">New Password (optional)</label>
+                <input
+                  id="editNewPassword"
+                  type="password"
+                  class="form-control"
+                  placeholder="Leave blank to keep current password"
+                />
+                <div class="form-text">Requires backend support for password reset.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-outline-primary" data-bs-dismiss="modal" type="button">Cancel</button>
+            <button id="btnSaveAccount" class="btn btn-primary" type="button">Save Changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1080;">
+      <div
+        id="appToast"
+        class="toast align-items-center border-0"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+      >
+        <div class="d-flex">
+          <div id="appToastBody" class="toast-body"></div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 id="confirmTitle" class="modal-title">Confirm</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body">
+            <div id="confirmBody" class="text-muted"></div>
+          </div>
+
+          <div class="modal-footer">
+            <button id="confirmCancelBtn" type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">
+              Cancel
+            </button>
+            <button id="confirmOkBtn" type="button" class="btn btn-danger">
+              Confirm
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="/js/accounts.js"></script>
+  </body>
 </html>

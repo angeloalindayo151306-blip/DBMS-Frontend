@@ -19,6 +19,8 @@ function fullName(me) {
   return me.full_name || me.name || me.display_name || "User";
 }
 
+const formatCcsId = (n) => (n ? `CCS-${String(n).padStart(6, "0")}` : "—");
+
 /**
  * Your files are in src/public/ so URLs are /filename.png
  * Note: "vp internal.png" has a SPACE, so use %20.
@@ -37,7 +39,9 @@ function avatarFor(me, role) {
   if (role === "dean") return "/dean.png"; // if missing, fallback to default below
 
   if (role === "officer" || role === "president") {
-    const key = normalizeTitle(me.officer_title || (role === "president" ? "president" : ""));
+    const key = normalizeTitle(
+      me.officer_title || (role === "president" ? "president" : "")
+    );
     return TITLE_TO_AVATAR[key] || "/default.png";
   }
 
@@ -74,6 +78,43 @@ async function getEmailFallback() {
   }
 }
 
+/**
+ * Ensures there is a field value element (span/div/etc) to put the ID number into.
+ * If #vCcsIdNo doesn't exist in HTML, it will insert a row after the row containing #vEmail.
+ * This avoids breaking your page even if you did not edit welcome.html.
+ */
+function ensureValueField({ valueId, labelText, afterValueId }) {
+  let valueEl = el(valueId);
+  if (valueEl) return valueEl;
+
+  const afterEl = el(afterValueId);
+  if (!afterEl) return null;
+
+  // If fields are in a table
+  const afterTr = afterEl.closest("tr");
+  if (afterTr && afterTr.parentElement) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="text-muted">${labelText}</td>
+      <td class="text-end fw-semibold" id="${valueId}">—</td>
+    `;
+    afterTr.insertAdjacentElement("afterend", tr);
+    return el(valueId);
+  }
+
+  // If fields are in div rows
+  const row = afterEl.closest(".d-flex") || afterEl.parentElement;
+  const wrap = document.createElement("div");
+  wrap.className = row?.className || "d-flex justify-content-between";
+  wrap.innerHTML = `
+    <div class="text-muted">${labelText}</div>
+    <div class="fw-semibold" id="${valueId}">—</div>
+  `;
+  row?.insertAdjacentElement("afterend", wrap);
+
+  return el(valueId);
+}
+
 async function init() {
   const msg = el("message");
 
@@ -90,7 +131,8 @@ async function init() {
     // Subtitle
     const subLine = el("subLine");
     if (role === "dean") subLine.textContent = "Dean";
-    else if ((role === "officer" || role === "president") && me.officer_title) subLine.textContent = me.officer_title;
+    else if ((role === "officer" || role === "president") && me.officer_title)
+      subLine.textContent = me.officer_title;
     else if (role === "student") subLine.textContent = "Student";
     else subLine.textContent = "DFMS User";
 
@@ -113,6 +155,14 @@ async function init() {
     el("vYear").textContent = me.year_level ?? "-";
     el("vAge").textContent = me.age ?? "-";
     el("vAddress").textContent = me.address || "-";
+
+    // NEW: Show ID No (all roles except Dean; dean will show "—")
+    const idField = ensureValueField({
+      valueId: "vCcsIdNo",
+      labelText: "ID No.",
+      afterValueId: "vEmail",
+    });
+    if (idField) idField.textContent = formatCcsId(me?.ccs_id_no);
 
     // Buttons
     el("btnContinue").addEventListener("click", () => {

@@ -4,9 +4,21 @@ import { renderSidebar } from "./ui.js";
 
 const el = (id) => document.getElementById(id);
 
+const num = (v) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+};
+
 const money = (n) =>
-  `₱ ${Number(n || 0).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`;
-const fmtDate = (s) => (s ? new Date(s).toLocaleString() : "—");
+  `₱ ${num(n).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`;
+
+const fmtDate = (s) => {
+  if (!s) return "—";
+  const d = new Date(s);
+  return Number.isNaN(d.getTime()) ? "—" : d.toLocaleString();
+};
+
+const formatCcsId = (n) => (n ? `CCS-${String(n).padStart(6, "0")}` : "—");
 
 function qs(name) {
   return new URLSearchParams(window.location.search).get(name);
@@ -29,13 +41,13 @@ function getReceiptNo(p) {
 
 function sumBreakdown(breakdown) {
   if (!Array.isArray(breakdown)) return 0;
-  return breakdown.reduce((s, it) => s + Number(it?.amount || 0), 0);
+  return breakdown.reduce((s, it) => s + num(it?.amount), 0);
 }
 
 function getRequiredPerStudent(proposal) {
   if (!proposal) return 0;
   const breakdownTotal = sumBreakdown(proposal.breakdown);
-  return breakdownTotal > 0 ? breakdownTotal : Number(proposal.required_per_student || 0);
+  return breakdownTotal > 0 ? breakdownTotal : num(proposal.required_per_student);
 }
 
 function badge(text, type) {
@@ -44,6 +56,36 @@ function badge(text, type) {
 
 function setMsg(html) {
   el("msg").innerHTML = html || "";
+}
+
+function creatorLabel(proposal) {
+  const c = proposal?.creator;
+  if (!c) return "—";
+  const name =
+    c.full_name ||
+    [c.first_name, c.middle_name, c.last_name].filter(Boolean).join(" ") ||
+    "—";
+  const title = c.officer_title ? ` (${c.officer_title})` : "";
+  return `${name}${title}`;
+}
+
+// inserts (or updates) a “Submitted by” line under the event title
+function setProposalByLine(text) {
+  const titleEl = el("proposalTitle");
+  if (!titleEl) return;
+
+  const parent = titleEl.parentElement;
+  if (!parent) return;
+
+  let byEl = document.getElementById("proposalByLine");
+  if (!byEl) {
+    byEl = document.createElement("div");
+    byEl.id = "proposalByLine";
+    byEl.className = "text-muted small mt-1";
+    parent.appendChild(byEl);
+  }
+
+  byEl.innerHTML = `Submitted by: <b>${escapeHtml(text)}</b>`;
 }
 
 async function init() {
@@ -59,16 +101,15 @@ async function init() {
   }
 
   try {
-    // Payments list (includes receipts + student join)
     const payments = await getOfficerProposalPayments(proposalId);
 
-    // Student info map
     const studentInfoById = new Map();
     for (const p of payments || []) {
-      if (p.student_id && p.student) studentInfoById.set(p.student_id, p.student);
+      const embeddedStudent = p.student || p.profiles || p.student_profile || null;
+      if (p.student_id && embeddedStudent) studentInfoById.set(p.student_id, embeddedStudent);
     }
 
-    function studentNameAndExtra(student_id) {
+    function studentInfo(student_id) {
       const s = studentInfoById.get(student_id);
 
       const name =
@@ -76,39 +117,40 @@ async function init() {
         [s?.first_name, s?.middle_name, s?.last_name].filter(Boolean).join(" ") ||
         null;
 
-      const extra =
-        (s?.course ? s.course : "") + (s?.year_level ? ` - Yr ${s.year_level}` : "");
+      const extra = (s?.course ? s.course : "") + (s?.year_level ? ` - Yr ${s.year_level}` : "");
+      const idNo = formatCcsId(s?.ccs_id_no);
 
-      return {
-        name: name || student_id,
-        extra,
-      };
+      return { name: name || student_id, extra, idNo };
     }
 
     function studentCell(student_id) {
-      const info = studentNameAndExtra(student_id);
+      const info = studentInfo(student_id);
       return `
-        <div>${escapeHtml(info.name)}</div>
+        <div class="fw-semibold">${escapeHtml(info.name)}</div>
         <div class="small text-muted">${escapeHtml(info.extra)}</div>
       `;
     }
 
-    // Proposal info
+    function studentIdCell(student_id) {
+      const info = studentInfo(student_id);
+      return `<span class="text-nowrap">${escapeHtml(info.idNo)}</span>`;
+    }
+
+    // Proposal info (now includes `creator`)
     const proposals = await getProposals();
-    const proposal = (proposals || []).find((p) => p.id === proposalId);
+    const proposal = (proposals || []).find((p) => String(p.id) === String(proposalId));
 
     el("proposalTitle").textContent = proposal?.title || proposalId;
+    setProposalByLine(creatorLabel(proposal));
 
     const requiredPerStudent = getRequiredPerStudent(proposal);
 
-    // totals
-    const totalCollected = (payments || []).reduce((s, p) => s + Number(p.amount || 0), 0);
+    const totalCollected = (payments || []).reduce((s, p) => s + num(p.amount), 0);
 
-    // total paid per student
     const paidByStudent = new Map();
     for (const p of payments || []) {
       const sid = p.student_id;
-      paidByStudent.set(sid, (paidByStudent.get(sid) || 0) + Number(p.amount || 0));
+      paidByStudent.set(sid, (paidByStudent.get(sid) || 0) + num(p.amount));
     }
 
     const studentRows = Array.from(paidByStudent.entries())
@@ -127,7 +169,6 @@ async function init() {
     const fullyPaidCount = studentRows.filter((r) => r.fully).length;
     const partialPaidCount = studentRows.length - fullyPaidCount;
 
-    // status per payment row based on student total
     const statusForStudent = (student_id) => {
       const totalPaid = paidByStudent.get(student_id) || 0;
       if (requiredPerStudent <= 0) return "—";
@@ -136,21 +177,21 @@ async function init() {
         : badge("Partial Pay", "warning");
     };
 
-    // Summary UI
     el("sRequired").textContent = requiredPerStudent > 0 ? money(requiredPerStudent) : "—";
     el("sCollected").textContent = money(totalCollected);
     el("sStudentsPaid").textContent = String(studentRows.length);
     el("sFullyPaid").textContent = String(fullyPaidCount);
     el("sPartialPaid").textContent = String(partialPaidCount);
 
-    // Completion (fully paid ratio among students who paid)
     const denom = studentRows.length || 0;
     const pct = denom ? Math.round((fullyPaidCount / denom) * 100) : 0;
     el("sCompletionText").textContent = denom ? `${pct}%` : "—";
     el("sCompletionBar").style.width = `${pct}%`;
-    el("sCompletionBar").className = `progress-bar ${pct >= 80 ? "bg-success" : pct >= 40 ? "bg-warning" : "bg-danger"}`;
+    el("sCompletionBar").className = `progress-bar ${
+      pct >= 80 ? "bg-success" : pct >= 40 ? "bg-warning" : "bg-danger"
+    }`;
 
-    // Breakdown UI
+    // Breakdown
     const breakdown = Array.isArray(proposal?.breakdown) ? proposal.breakdown : [];
     if (!breakdown.length) {
       el("breakdownWrap").innerHTML = `<div class="text-muted">No breakdown stored.</div>`;
@@ -160,20 +201,17 @@ async function init() {
         <div class="table-responsive">
           <table class="table table-sm align-middle mb-0">
             <thead>
-              <tr>
-                <th>Item</th>
-                <th class="text-end">Amount</th>
-              </tr>
+              <tr><th>Item</th><th class="text-end">Amount</th></tr>
             </thead>
             <tbody>
               ${breakdown
                 .map(
                   (it) => `
-                  <tr>
-                    <td>${escapeHtml(it.name || "")}</td>
-                    <td class="text-end">${money(it.amount)}</td>
-                  </tr>
-                `
+                    <tr>
+                      <td>${escapeHtml(it.name || "")}</td>
+                      <td class="text-end">${money(it.amount)}</td>
+                    </tr>
+                  `
                 )
                 .join("")}
               <tr>
@@ -186,12 +224,11 @@ async function init() {
       `;
     }
 
-    // Render student status table
     const allStudentStatus = studentRows.map((r) => {
-      const info = studentNameAndExtra(r.student_id);
+      const info = studentInfo(r.student_id);
       return {
         ...r,
-        _nameSearch: `${info.name} ${info.extra}`.toLowerCase(),
+        _nameSearch: `${info.name} ${info.extra} ${info.idNo}`.toLowerCase(),
         _statusKey: r.fully ? "fully" : "partial",
       };
     });
@@ -210,19 +247,20 @@ async function init() {
 
       const tbody = el("studentsTbody");
       if (!rows.length) {
-        tbody.innerHTML = `<tr><td colspan="3" class="text-muted">No payments yet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="text-muted">No payments yet.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = rows
         .map(
           (r) => `
-          <tr>
-            <td>${studentCell(r.student_id)}</td>
-            <td>${money(r.totalPaid)}</td>
-            <td>${r.statusHtml}</td>
-          </tr>
-        `
+            <tr>
+              <td>${studentCell(r.student_id)}</td>
+              <td>${studentIdCell(r.student_id)}</td>
+              <td>${money(r.totalPaid)}</td>
+              <td>${r.statusHtml}</td>
+            </tr>
+          `
         )
         .join("");
     }
@@ -231,11 +269,10 @@ async function init() {
     el("studentFilter").addEventListener("change", renderStudents);
     renderStudents();
 
-    // Render payments list table
     const paymentRows = (payments || []).map((p) => {
-      const info = studentNameAndExtra(p.student_id);
+      const info = studentInfo(p.student_id);
       const receipt = getReceiptNo(p);
-      const hay = `${info.name} ${info.extra} ${p.reference_no || ""} ${receipt || ""}`.toLowerCase();
+      const hay = `${info.name} ${info.extra} ${info.idNo} ${p.reference_no || ""} ${receipt || ""}`.toLowerCase();
       return { p, hay, receipt };
     });
 
@@ -247,15 +284,16 @@ async function init() {
 
       const tbody = el("paymentsTbody");
       if (!rows.length) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-muted">No payments yet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="text-muted">No payments yet.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = rows
-        .map(({ p, receipt }) => {
-          return `
+        .map(
+          ({ p, receipt }) => `
             <tr>
               <td>${studentCell(p.student_id)}</td>
+              <td>${studentIdCell(p.student_id)}</td>
               <td>${money(p.amount)}</td>
               <td>${escapeHtml(p.method || "—")}</td>
               <td>${escapeHtml(p.reference_no || "—")}</td>
@@ -263,15 +301,15 @@ async function init() {
               <td>${statusForStudent(p.student_id)}</td>
               <td>${escapeHtml(receipt)}</td>
             </tr>
-          `;
-        })
+          `
+        )
         .join("");
     }
 
     el("paymentSearch").addEventListener("input", renderPayments);
     renderPayments();
   } catch (e) {
-    setMsg(`<div class="alert alert-danger">${e.message}</div>`);
+    setMsg(`<div class="alert alert-danger">${escapeHtml(e.message)}</div>`);
   }
 }
 

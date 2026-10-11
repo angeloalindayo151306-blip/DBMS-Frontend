@@ -25,17 +25,18 @@
     <link rel="stylesheet" href="/css/style.css" />
   </head>
 
-  <body>
-    <div class="container-fluid">
-      <div class="row min-vh-100">
-        <aside class="col-12 col-md-3 col-lg-2 p-0">
-          <div class="sidebar h-100" id="sidebar"></div>
-        </aside>
+  <body class="app-shell-page">
+    <div class="app-shell">
+      <aside class="app-sidebar">
+        <div class="sidebar h-100" id="sidebar"></div>
+      </aside>
 
-        <main class="col-12 col-md-9 col-lg-10 p-4">
+      <main class="app-main">
+        <!-- dean.js will render the whole dashboard here (including Student Payment Status) -->
+        <div class="mx-auto" style="max-width: 1100px">
           <div id="content"></div>
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
 
     <script type="module" src="/js/dean.js"></script>

@@ -391,3 +391,134 @@ body.app-body .btn-outline-primary:hover{
 .btn-outline-primary{
   border-width: 1.5px;
 }
+
+/* =========================
+   App Shell (Modern Light UI)
+   Opt-in by adding: <body class="app-shell-page">
+   ========================= */
+
+   body.app-shell-page{
+    /* keep your existing white/green background from body */
+  }
+  
+  /* rounded “frame” like the dashboard sample */
+  .app-shell{
+    max-width: 1440px;
+    margin: 18px auto;
+    min-height: calc(100vh - 36px);
+  
+    display: flex;
+    border-radius: 26px;
+    overflow: hidden;
+  
+    /* glassy light surface */
+    background: rgba(255,255,255,.55);
+    backdrop-filter: blur(10px);
+  
+    border: 1px solid var(--border);
+    box-shadow: 0 22px 60px rgba(2, 8, 23, .12);
+  }
+  
+  /* left column */
+  .app-sidebar{
+    width: 280px;
+    flex: 0 0 280px;
+  }
+  
+  /* make your existing sidebar fit the shell (no full-viewport sticky) */
+  .app-shell .sidebar,
+  .app-shell #sidebar{
+    height: 100%;
+    min-height: 100%;
+    position: static; /* override your sticky sidebar */
+    top: auto;
+    border-right: 1px solid rgba(255,255,255,.08);
+  }
+  
+  /* main content */
+  .app-main{
+    flex: 1;
+    padding: 26px;
+  
+    /* subtle green tint header area */
+    background:
+      radial-gradient(1000px 600px at 80% 0%, rgba(25,161,114,.10), transparent 55%),
+      radial-gradient(900px 520px at 10% 20%, rgba(15,90,68,.10), transparent 55%),
+      rgba(255,255,255,.20);
+  }
+  
+  /* Responsive: on small screens use full width stack */
+  @media (max-width: 991.98px){
+    .app-shell{
+      margin: 0;
+      min-height: 100vh;
+      border-radius: 0;
+      flex-direction: column;
+    }
+    .app-sidebar{
+      width: 100%;
+      flex: 0 0 auto;
+    }
+    .app-main{
+      padding: 18px;
+    }
+  }
+
+  /* =========================================
+   Green background like Login (Internal Pages)
+   Applies to pages that use: <body class="app-shell-page">
+   ========================================= */
+
+body.app-shell-page{
+  /* deep CCS green background */
+  background:
+    radial-gradient(1200px 700px at 15% 10%, rgba(25,161,114,.30), transparent 60%),
+    radial-gradient(1000px 600px at 90% 5%, rgba(15,90,68,.35), transparent 55%),
+    linear-gradient(135deg, var(--ccs-blue-900), #041a14);
+  color: var(--text);
+}
+
+/* make the shell stand out on dark green */
+body.app-shell-page .app-shell{
+  background: rgba(255,255,255,.78);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.18);
+  box-shadow: 0 22px 60px rgba(0,0,0,.28);
+}
+
+/* keep main area light/clean */
+body.app-shell-page .app-main{
+  background:
+    radial-gradient(1000px 600px at 80% 0%, rgba(25,161,114,.12), transparent 55%),
+    radial-gradient(900px 520px at 10% 20%, rgba(15,90,68,.10), transparent 55%),
+    rgba(255,255,255,.10);
+}
+
+/* =========================================
+   Solid green background (no gradients)
+   Applies to internal pages: <body class="app-shell-page">
+   ========================================= */
+
+/* ensure both html + body are solid (prevents edge/scroll area showing other color) */
+html, body{
+  background: transparent;
+}
+
+body.app-shell-page{
+  /* pick ONE solid green */
+  background: var(--ccs-blue-900) !important; /* #06251f */
+  background-image: none !important;
+}
+
+/* keep the shell readable on dark green */
+body.app-shell-page .app-shell{
+  background: rgba(255,255,255,.82);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.18);
+  box-shadow: 0 22px 60px rgba(0,0,0,.28);
+}
+
+/* optional: keep main area plain (remove any tint/gradients) */
+body.app-shell-page .app-main{
+  background: transparent !important;
+}

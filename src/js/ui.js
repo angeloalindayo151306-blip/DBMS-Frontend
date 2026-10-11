@@ -6,7 +6,7 @@ function navItemsForRole(role) {
       { label: "Dashboard", href: "/pages/student.html", icon: "bi-speedometer2" },
       { label: "Events", href: "/pages/student-events.html", icon: "bi-calendar-event" },
       { label: "Make Payment", href: "/pages/student-pay.html", icon: "bi-cash-coin" },
-      { label: "History/Receipts", href: "/pages/student-history.html", icon: "bi-receipt" }
+      { label: "History/Receipts", href: "/pages/student-history.html", icon: "bi-receipt" },
     ];
   }
 
@@ -14,7 +14,9 @@ function navItemsForRole(role) {
     return [
       { label: "Dashboard", href: "/pages/officer.html", icon: "bi-speedometer2" },
       { label: "Proposals", href: "/pages/officer-proposals.html", icon: "bi-file-earmark-text" },
-      { label: "Proposal Payments", href: "/pages/officer-payments-list.html", icon: "bi-clipboard-data" }
+      { label: "Proposal Payments", href: "/pages/officer-payments-list.html", icon: "bi-clipboard-data" },
+      // NEW:
+      { label: "Expenses", href: "/pages/officer-expenses.html", icon: "bi-receipt-cutoff" },
     ];
   }
 
@@ -22,8 +24,10 @@ function navItemsForRole(role) {
     return [
       { label: "Dashboard", href: "/pages/dean.html", icon: "bi-speedometer2" },
       { label: "Approvals", href: "/pages/dean-approvals.html", icon: "bi-check2-square" },
+      // Optional convenience link that opens the Expenses tab (still same page)
+     
       { label: "Reports", href: "/pages/dean-reports.html", icon: "bi-bar-chart-line" },
-      { label: "Accounts", href: "/pages/accounts.html", icon: "bi-people" }
+      { label: "Accounts", href: "/pages/accounts.html", icon: "bi-people" },
     ];
   }
 
@@ -32,7 +36,9 @@ function navItemsForRole(role) {
       { label: "Dashboard", href: "/pages/president.html", icon: "bi-speedometer2" },
       { label: "Proposals", href: "/pages/officer-proposals.html", icon: "bi-file-earmark-text" },
       { label: "Proposal Payments", href: "/pages/officer-payments-list.html", icon: "bi-clipboard-data" },
-      { label: "Accounts", href: "/pages/accounts.html", icon: "bi-people" }
+      // NEW:
+      { label: "Expenses", href: "/pages/officer-expenses.html", icon: "bi-receipt-cutoff" },
+      { label: "Accounts", href: "/pages/accounts.html", icon: "bi-people" },
     ];
   }
 
@@ -42,6 +48,20 @@ function navItemsForRole(role) {
 export function renderSidebar(el, role) {
   const items = navItemsForRole(role);
   const current = window.location.pathname;
+  const hash = window.location.hash || "";
+
+  // active highlight should work with #hash links too
+  const isActive = (href) => {
+    // exact match (no hash)
+    if (href === current) return true;
+
+    // match path + hash for links like /pages/dean-approvals.html#expenses
+    if (href.includes("#")) {
+      const [path, h] = href.split("#");
+      return path === current && (`#${h}` === hash);
+    }
+    return false;
+  };
 
   el.innerHTML = `
     <div class="brand">
@@ -68,7 +88,7 @@ export function renderSidebar(el, role) {
     ${items
       .map(
         (i) => `
-          <a class="${current === i.href ? "active" : ""}" href="${i.href}">
+          <a class="${isActive(i.href) ? "active" : ""}" href="${i.href}">
             <i class="bi ${i.icon}"></i>
             <span>${i.label}</span>
           </a>
@@ -89,4 +109,10 @@ export function renderSidebar(el, role) {
     await logout();
     window.location.href = "/pages/login.html";
   });
+
+  // If dean clicks "Expense Approvals" link with #expenses, open expenses tab automatically
+  if (current.endsWith("/dean-approvals.html") && hash === "#expenses") {
+    const btn = document.querySelector("#tab-expenses");
+    if (btn) btn.click();
+  }
 }

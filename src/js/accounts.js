@@ -6,11 +6,13 @@ import {
   createDeanAccount,
   listAccounts,
   updateAccount,
-  deleteAccount,   // used as DISABLE (ban)
-  enableAccount,   // you will add this in api.js (snippet below)
+  deleteAccount, // used as DISABLE (ban)
+  enableAccount,
 } from "./api.js";
 
 const el = (id) => document.getElementById(id);
+
+const formatCcsId = (n) => (n ? `CCS-${String(n).padStart(6, "0")}` : "—");
 
 function calcAge(dobStr) {
   if (!dobStr) return "";
@@ -118,6 +120,37 @@ function canManageTarget(targetRole) {
   return targetRole === "student" || targetRole === "officer";
 }
 
+/**
+ * Adds an "ID No." header automatically if your accounts.html doesn't have it yet.
+ * This prevents you from needing to edit the HTML manually and avoids misaligned columns.
+ */
+function ensureIdHeaderColumn() {
+  const tbody = el("accountsTbody");
+  const table = tbody?.closest("table");
+  const theadRow = table?.querySelector("thead tr");
+  if (!theadRow) return;
+
+  // Already added?
+  if (theadRow.querySelector('th[data-col="ccs_id_no"]')) return;
+
+  const th = document.createElement("th");
+  th.dataset.col = "ccs_id_no";
+  th.className = "text-nowrap";
+  th.textContent = "ID No.";
+
+  // Insert after first column (Name)
+  const firstTh = theadRow.children?.[0];
+  if (firstTh) firstTh.insertAdjacentElement("afterend", th);
+  else theadRow.appendChild(th);
+}
+
+function getAccountsColCount() {
+  const tbody = el("accountsTbody");
+  const table = tbody?.closest("table");
+  const theadRow = table?.querySelector("thead tr");
+  return theadRow?.children?.length || 7;
+}
+
 function applyClientFilters(rows) {
   const roleVal = el("filterRole").value;
   const q = (el("searchAccount").value || "").toLowerCase().trim();
@@ -136,7 +169,9 @@ function applyClientFilters(rows) {
     }
 
     if (q) {
-      const hay = `${fullNameRow(p)} ${p.email ?? ""} ${p.mobile_number ?? ""}`.toLowerCase();
+      const hay = `${fullNameRow(p)} ${p.email ?? ""} ${p.mobile_number ?? ""} ${formatCcsId(
+        p.ccs_id_no
+      )}`.toLowerCase();
       if (!hay.includes(q)) return false;
     }
 
@@ -147,30 +182,35 @@ function applyClientFilters(rows) {
 function roleBadge(role, disabled) {
   const r = (role || "").toLowerCase();
   const cls =
-    r === "dean" ? "dark" :
-    r === "president" ? "primary" :
-    r === "officer" ? "secondary" :
-    "info";
+    r === "dean"
+      ? "dark"
+      : r === "president"
+        ? "primary"
+        : r === "officer"
+          ? "secondary"
+          : "info";
 
-  const dis = disabled
-    ? `<span class="badge text-bg-warning ms-2">DISABLED</span>`
-    : "";
+  const dis = disabled ? `<span class="badge text-bg-warning ms-2">DISABLED</span>` : "";
 
   return `<span class="badge text-bg-${cls}">${escapeHtml(r || "-")}</span>${dis}`;
 }
 
 function renderAccounts(rows) {
+  ensureIdHeaderColumn();
+
   const tbody = el("accountsTbody");
   const filtered = applyClientFilters(rows);
+  const colCount = getAccountsColCount();
 
   if (!filtered.length) {
-    tbody.innerHTML = `<tr><td colspan="7" class="text-muted">No accounts found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${colCount}" class="text-muted">No accounts found.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = filtered
     .map((p) => {
       const name = fullNameRow(p);
+      const ccsId = formatCcsId(p.ccs_id_no);
       const email = p.email ?? "-";
       const role = p.role ?? "-";
       const pos = p.officer_title ?? "-";
@@ -199,6 +239,7 @@ function renderAccounts(rows) {
       return `
         <tr ${disabledFlag ? 'style="opacity:.75;"' : ""}>
           <td class="fw-semibold">${escapeHtml(name)}</td>
+          <td class="text-nowrap">${escapeHtml(ccsId)}</td>
           <td>${escapeHtml(email)}</td>
           <td>${roleBadge(role, disabledFlag)}</td>
           <td>${escapeHtml(pos)}</td>
@@ -230,8 +271,11 @@ function renderAccounts(rows) {
 }
 
 async function loadAccounts() {
+  ensureIdHeaderColumn();
+
   const tbody = el("accountsTbody");
-  tbody.innerHTML = `<tr><td colspan="7" class="text-muted">Loading…</td></tr>`;
+  const colCount = getAccountsColCount();
+  tbody.innerHTML = `<tr><td colspan="${colCount}" class="text-muted">Loading…</td></tr>`;
 
   const roleVal = el("filterRole").value;
 
@@ -362,6 +406,7 @@ async function onDisable(id) {
     body: `
       Disable login access for this account?<br><br>
       <b>Name:</b> ${escapeHtml(fullNameRow(row))}<br>
+      <b>ID No:</b> ${escapeHtml(formatCcsId(row.ccs_id_no))}<br>
       <b>Email:</b> ${escapeHtml(row.email ?? "-")}<br>
       <b>Role:</b> ${escapeHtml(row.role ?? "-")}<br><br>
       <span class="text-muted">This will prevent login, but keeps records/history.</span>
@@ -396,6 +441,7 @@ async function onEnable(id) {
     body: `
       Enable login access for this account?<br><br>
       <b>Name:</b> ${escapeHtml(fullNameRow(row))}<br>
+      <b>ID No:</b> ${escapeHtml(formatCcsId(row.ccs_id_no))}<br>
       <b>Email:</b> ${escapeHtml(row.email ?? "-")}<br>
       <b>Role:</b> ${escapeHtml(row.role ?? "-")}
     `,
@@ -427,9 +473,7 @@ async function init() {
     ? "President can create Student/Officer and manage Student/Officer accounts."
     : "Dean can create and manage Student/Officer/President/Dean accounts.";
 
-  el("listHint").textContent = isPresident
-    ? "Showing Students and Officers only."
-    : "Showing all roles.";
+  el("listHint").textContent = isPresident ? "Showing Students and Officers only." : "Showing all roles.";
 
   // Restrict role dropdown for president
   const roleSelect = el("role");

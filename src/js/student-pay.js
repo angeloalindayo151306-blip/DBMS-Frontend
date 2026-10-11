@@ -47,7 +47,6 @@ async function init() {
     content.innerHTML = `
       <div class="d-flex align-items-center justify-content-between mb-3">
         <div>
-          <h3 class="mb-1">Make Payment</h3>
           <div class="text-muted small">Pay your remaining balance for an event.</div>
         </div>
         <a class="btn btn-outline-primary btn-sm" href="/pages/student-events.html">

@@ -8,18 +8,38 @@ const money = (n) =>
 
 const el = (id) => document.getElementById(id);
 
-function badge(status) {
-  const cls = status === "approved" ? "success" : status === "rejected" ? "danger" : "warning";
-  return `<span class="badge text-bg-${cls}">${status}</span>`;
+function badge(statusRaw) {
+  const status = String(statusRaw || "pending");
+  const cls =
+    status === "approved" ? "success" : status === "rejected" ? "danger" : "warning";
+  return `<span class="badge text-bg-${cls}">${escapeHtml(status)}</span>`;
 }
 
-function escapeHtml(str = "") {
-  return str
+function escapeHtml(v = "") {
+  return String(v ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+/* ---------- NEW: creator helpers (for "Submitted by") ---------- */
+function creatorLabel(proposal) {
+  const c = proposal?.creator;
+
+  // preferred: embedded creator object
+  if (c) {
+    const name =
+      c.full_name ||
+      [c.first_name, c.middle_name, c.last_name].filter(Boolean).join(" ") ||
+      "—";
+    const title = c.officer_title ? ` (${c.officer_title})` : "";
+    return `${name}${title}`;
+  }
+
+  // fallback: created_by uuid
+  return proposal?.created_by ? String(proposal.created_by) : "—";
 }
 
 /* Toast (replaces alert) */
@@ -28,12 +48,13 @@ function toast(type, html) {
   const toastEl = el("appToast");
   const bodyEl = el("appToastBody");
 
-  const cls = {
-    success: "text-bg-success",
-    danger: "text-bg-danger",
-    warning: "text-bg-warning",
-    info: "text-bg-info",
-  }[type] || "text-bg-info";
+  const cls =
+    {
+      success: "text-bg-success",
+      danger: "text-bg-danger",
+      warning: "text-bg-warning",
+      info: "text-bg-info",
+    }[type] || "text-bg-info";
 
   toastEl.className = `toast align-items-center border-0 ${cls}`;
   bodyEl.innerHTML = html;
@@ -69,22 +90,22 @@ async function init() {
     const rows = items
       .map(
         (it, idx) => `
-        <tr>
-          <td>
-            <input class="form-control form-control-sm" data-name="${idx}"
-              value="${escapeHtml(it.name || "")}" placeholder="Item name" required>
-          </td>
-          <td style="width:200px;">
-            <input class="form-control form-control-sm" data-amount="${idx}" type="number"
-              min="0" step="0.01" value="${Number(it.amount || 0)}" required>
-          </td>
-          <td style="width:110px;" class="text-end">
-            <button class="btn btn-sm btn-outline-danger" data-remove="${idx}" type="button">
-              <i class="bi bi-trash me-1"></i>Remove
-            </button>
-          </td>
-        </tr>
-      `
+          <tr>
+            <td>
+              <input class="form-control form-control-sm" data-name="${idx}"
+                value="${escapeHtml(it.name || "")}" placeholder="Item name" required>
+            </td>
+            <td style="width:200px;">
+              <input class="form-control form-control-sm" data-amount="${idx}" type="number"
+                min="0" step="0.01" value="${Number(it.amount || 0)}" required>
+            </td>
+            <td style="width:110px;" class="text-end">
+              <button class="btn btn-sm btn-outline-danger" data-remove="${idx}" type="button">
+                <i class="bi bi-trash me-1"></i>Remove
+              </button>
+            </td>
+          </tr>
+        `
       )
       .join("");
 
@@ -151,16 +172,19 @@ async function init() {
       bsEditModal.hide();
       await load();
     } catch (e) {
-      el("editModalMsg").innerHTML = `<div class="alert alert-danger mb-0">${e.message}</div>`;
+      el("editModalMsg").innerHTML = `<div class="alert alert-danger mb-0">${escapeHtml(
+        e.message
+      )}</div>`;
     } finally {
       btn.disabled = false;
     }
   });
 
   async function load() {
-    const proposals = await getProposals(); // backend now can return all proposals for officers/president
+    const proposalsRaw = await getProposals(); // backend returns all proposals for officer/president
+    const proposals = Array.isArray(proposalsRaw) ? proposalsRaw : [];
 
-    proposalsById = new Map((proposals || []).map((p) => [p.id, p]));
+    proposalsById = new Map(proposals.map((p) => [p.id, p]));
 
     content.innerHTML = `
       <!-- Create Proposal -->
@@ -220,7 +244,7 @@ async function init() {
             </thead>
             <tbody>
               ${
-                (proposals || []).length
+                proposals.length
                   ? proposals
                       .map((p) => {
                         const breakdown = Array.isArray(p.breakdown) ? p.breakdown : [];
@@ -231,36 +255,52 @@ async function init() {
                               <summary class="small text-muted">View breakdown</summary>
                               <ul class="small mb-0">
                                 ${breakdown
-                                  .map((it) => `<li>${escapeHtml(it.name)} — ${money(it.amount)}</li>`)
+                                  .map(
+                                    (it) =>
+                                      `<li>${escapeHtml(it.name)} — ${money(it.amount)}</li>`
+                                  )
                                   .join("")}
                               </ul>
                             </details>
                           `
                           : `<div class="small text-muted">No breakdown stored</div>`;
 
-                        // IMPORTANT: Only show Edit if:
+                        // Only show Edit if:
                         // - pending
-                        // - created_by matches current user id (prevents "Not your proposal")
-                        const canEdit = p.status === "pending" && myUserId && p.created_by === myUserId;
+                        // - created_by matches current user id
+                        const canEdit =
+                          String(p.status) === "pending" && myUserId && p.created_by === myUserId;
+
+                        const by = creatorLabel(p);
 
                         return `
                           <tr>
                             <td>
-                              <div class="fw-semibold">${escapeHtml(p.title)}</div>
+                              <div class="fw-semibold">${escapeHtml(p.title || "Untitled")}</div>
                               <div class="small text-muted">${escapeHtml(p.description || "")}</div>
+
+                              <!-- NEW: Submitted by line -->
+                              <div class="small text-muted">Submitted by: <b>${escapeHtml(
+                                by
+                              )}</b></div>
+
                               ${breakdownHtml}
                             </td>
                             <td>${badge(p.status)}</td>
                             <td>${money(p.required_per_student)}</td>
                             <td>${fmtDate(p.created_at)}</td>
                             <td class="text-end">
-                              <a class="btn btn-sm btn-outline-primary" href="/pages/officer-payments.html?id=${p.id}">
+                              <a class="btn btn-sm btn-outline-primary" href="/pages/officer-payments.html?id=${escapeHtml(
+                                p.id
+                              )}">
                                 <i class="bi bi-receipt me-1"></i>Payments
                               </a>
                               ${
                                 canEdit
-                                  ? `<button class="btn btn-sm btn-outline-secondary ms-1" data-edit="${p.id}" type="button">
-                                       <i class="bi bi-pencil me-1"></i>Edit
+                                  ? `<button class="btn btn-sm btn-outline-secondary ms-1" data-edit="${escapeHtml(
+                                      p.id
+                                    )}" type="button">
+                                        <i class="bi bi-pencil me-1"></i>Edit
                                      </button>`
                                   : ``
                               }
@@ -333,7 +373,10 @@ async function init() {
         const description = el("description").value.trim();
 
         const breakdown = items
-          .map((it) => ({ name: (it.name || "").trim(), amount: Number(it.amount || 0) }))
+          .map((it) => ({
+            name: (it.name || "").trim(),
+            amount: Number(it.amount || 0),
+          }))
           .filter((it) => it.name.length > 0);
 
         if (breakdown.length === 0) throw new Error("Please add at least 1 breakdown item.");
@@ -354,13 +397,15 @@ async function init() {
         items = [{ name: "Registration", amount: 50 }];
         await load();
       } catch (err) {
-        msg.innerHTML = `<div class="alert alert-danger mb-0">${err.message}</div>`;
+        msg.innerHTML = `<div class="alert alert-danger mb-0">${escapeHtml(
+          err.message
+        )}</div>`;
       } finally {
         btn.disabled = false;
       }
     });
 
-    // ---- Edit button wiring (now opens modal, not prompt) ----
+    // ---- Edit button wiring (opens modal) ----
     content.querySelectorAll("[data-edit]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-edit");
@@ -374,7 +419,7 @@ async function init() {
   try {
     await load();
   } catch (e) {
-    content.innerHTML = `<div class="alert alert-danger">${e.message}</div>`;
+    content.innerHTML = `<div class="alert alert-danger">${escapeHtml(e.message)}</div>`;
   }
 }
 
